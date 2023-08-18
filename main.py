@@ -1,6 +1,7 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QLabel, QMainWindow, QPushButton
 from PyQt5.QtGui import QPixmap, QFontDatabase
+from PyQt5.QtCore import Qt
 from cadastro import Cadastro
 
 
@@ -9,6 +10,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("Barber Shop")
         self.resize(750, 650)
+        # self.setWindowFlag(Qt.FramelessWindowHint)
         # self.setStyleSheet("QMainWindow {background-color: #0c0c0c}")
         self.setStyleSheet("QMainWindow {background: url(wallpaper.jpg)}")
         QFontDatabase.addApplicationFont("GreatVibes-Regular.ttf")
@@ -86,7 +88,7 @@ class MainWindow(QMainWindow):
         self.imgAbout.resize(self.pixmap.width(), self.pixmap.height())
 
     def pressCadastro(self, event):
-        window.close()
+        # window.close()
         windowCad = Cadastro(self)
         windowCad.exec()
 
