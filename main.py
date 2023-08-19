@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QApplication, QLabel, QMainWindow, QPushButton
 from PyQt5.QtGui import QPixmap, QFontDatabase
 from PyQt5.QtCore import Qt
 from cadastro import Cadastro
+from connDB import ConnectDB
 
 
 class MainWindow(QMainWindow):
@@ -10,6 +11,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("Barber Shop")
         self.resize(750, 650)
+        self.setWindowFlags(self.windowFlags() & ~Qt.WindowMaximizeButtonHint)
         # self.setWindowFlag(Qt.FramelessWindowHint)
         # self.setStyleSheet("QMainWindow {background-color: #0c0c0c}")
         self.setStyleSheet("QMainWindow {background: url(wallpaper.jpg)}")
