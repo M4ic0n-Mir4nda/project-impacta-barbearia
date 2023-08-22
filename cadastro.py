@@ -12,7 +12,7 @@ class ClienteWidget(QWidget):
     def __init__(self):
         super().__init__()
         self.background = QLabel(self)
-        self.background.setGeometry(0, 0, 753, 700)
+        self.background.setGeometry(0, 0, 753, 712)
         self.background.setStyleSheet("background: url(wallpaper.jpg)")
 
         self.labelNome = QLabel(self)
@@ -76,12 +76,7 @@ class ClienteWidget(QWidget):
             nome = self.txtNome.text().upper()
             cpf = self.txtCpf.text()
             email = self.txtEmail.text()
-            if not "@" in email:
-                print('Não tem @')
-                return False
             dataNasc = datetime.strptime(str(self.txtDataNasc.text()), '%d/%m/%Y').strftime('%Y%m%d')
-            print(dataNasc)
-            # sql = f"insert into clientes (nome, cpf, email, datanasc) values ('Kaique Fischer', '123.456.789-89', 'kaique@kaique.com', 20230804)"
             sql = f"insert into clientes (nome, cpf, email, datanasc) values ('{nome}', '{cpf}', '{email}', {dataNasc})"
             conn.execute(sql)
             conn.commit()
@@ -106,10 +101,10 @@ class Cadastro(QDialog):
         super().__init__(parent)
         self.setWindowTitle("Cadastros")
         self.setWindowFlag(Qt.FramelessWindowHint)
-        self.setGeometry(305, 10, 753, 700)
+        self.resize(753, 712)
 
         self.container = QWidget(self)
-        self.container.setGeometry(0, 0, 250, 700)
+        self.container.setGeometry(0, 0, 250, 712)
         self.container.setStyleSheet("background-color: #2c3e50")
 
         self.imgLogo = QLabel(self)
@@ -142,7 +137,7 @@ class Cadastro(QDialog):
         self.container.setLayout(menu_layout)
 
         self.stack = QStackedWidget(self)
-        self.stack.setGeometry(250, 0, 503, 700)
+        self.stack.setGeometry(250, 0, 503, 712)
 
         self.cliente_widget = ClienteWidget()
         self.funcionario_widget = FuncionarioWidget()
@@ -158,7 +153,7 @@ class Cadastro(QDialog):
             """)
 
         self.buttonFechar = QPushButton("Fechar", self)
-        self.buttonFechar.setGeometry(390, 620, 200, 60)
+        self.buttonFechar.setGeometry(390, 630, 200, 60)
         self.buttonFechar.setStyleSheet("""
                                 QPushButton { background-color: #FF0000; color: white; font-size: 16px; padding: 10px; border: none; border-radius: 10px}
                                 QPushButton:hover { background-color: #ff6961; }

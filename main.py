@@ -12,8 +12,6 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Barber Shop")
         self.resize(750, 650)
         self.setWindowFlags(self.windowFlags() & ~Qt.WindowMaximizeButtonHint)
-        # self.setWindowFlag(Qt.FramelessWindowHint)
-        # self.setStyleSheet("QMainWindow {background-color: #0c0c0c}")
         self.setStyleSheet("QMainWindow {background: url(wallpaper.jpg)}")
         QFontDatabase.addApplicationFont("GreatVibes-Regular.ttf")
 
@@ -35,7 +33,6 @@ class MainWindow(QMainWindow):
         self.pixmap = self.pixmap.scaled(100, 100)
         self.imgNavalha.setPixmap(self.pixmap)
         self.imgNavalha.resize(self.pixmap.width(), self.pixmap.height())
-        # self.imgNavalha.mousePressEvent = self.pressEvent
 
         # ------------------------------------------------------
 
@@ -90,7 +87,6 @@ class MainWindow(QMainWindow):
         self.imgAbout.resize(self.pixmap.width(), self.pixmap.height())
 
     def pressCadastro(self, event):
-        # window.close()
         windowCad = Cadastro(self)
         windowCad.exec()
 
