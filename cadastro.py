@@ -12,7 +12,7 @@ class ClienteWidget(QWidget):
     def __init__(self):
         super().__init__()
         self.background = QLabel(self)
-        self.background.setGeometry(0, 0, 753, 712)
+        self.background.setGeometry(0, 0, 750, 712)
         self.background.setStyleSheet("background: url(wallpaper.jpg)")
 
         self.labelNome = QLabel(self)
@@ -101,7 +101,8 @@ class Cadastro(QDialog):
         super().__init__(parent)
         self.setWindowTitle("Cadastros")
         self.setWindowFlag(Qt.FramelessWindowHint)
-        self.resize(753, 712)
+        self.resize(750, 712)
+        self.center_dialog()
 
         self.container = QWidget(self)
         self.container.setGeometry(0, 0, 250, 712)
@@ -447,6 +448,19 @@ class Cadastro(QDialog):
 
     def showFuncionario(self):
         self.stack.setCurrentWidget(self.funcionario_widget)
+
+    def center_dialog(self):
+        # Obtém o tamanho da tela
+        screen_geo = QApplication.desktop().availableGeometry()
+
+        # Obtém o retângulo da geometria do diálogo
+        dialog_geo = self.frameGeometry()
+
+        # Calcula a posição para centralizar o diálogo
+        center_point = screen_geo.center()
+        dialog_geo.moveCenter(center_point)
+
+        self.move(dialog_geo.topLeft())  # Move o diálogo para a posição calculada
 
 
 class WorkerThread(QThread):

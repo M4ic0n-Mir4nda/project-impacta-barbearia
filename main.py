@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QApplication, QLabel, QMainWindow, QPushButton
 from PyQt5.QtGui import QPixmap, QFontDatabase
 from PyQt5.QtCore import Qt
 from cadastro import Cadastro
+from agendamento import Agendamento
 from connDB import ConnectDB
 
 
@@ -50,6 +51,7 @@ class MainWindow(QMainWindow):
         self.pixmap = self.pixmap.scaled(100, 100)
         self.imgAgendamento.setPixmap(self.pixmap)
         self.imgAgendamento.resize(self.pixmap.width(), self.pixmap.height())
+        self.imgAgendamento.mousePressEvent = self.pressAgendamento
 
         # ------------------------------------------------------
 
@@ -89,6 +91,10 @@ class MainWindow(QMainWindow):
     def pressCadastro(self, event):
         windowCad = Cadastro(self)
         windowCad.exec()
+
+    def pressAgendamento(self, event):
+        windowAgendamento = Agendamento(self)
+        windowAgendamento.exec()
 
 
 app = QApplication(sys.argv)
