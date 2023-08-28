@@ -1,6 +1,7 @@
 import sys
+import mysql.connector
 from PyQt5.QtWidgets import QApplication, QDialog, QLabel, QPushButton, QVBoxLayout, QWidget, QStackedWidget, QLineEdit, \
-    QMessageBox, QComboBox, QHBoxLayout
+    QMessageBox, QComboBox, QHBoxLayout, QTreeWidget, QTreeWidgetItem
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import Qt, QRegExp, QThread, QEvent, pyqtSignal, QDateTime, QTimer
 from PyQt5.QtGui import QPixmap, QFontDatabase, QRegExpValidator, QIcon
@@ -16,13 +17,18 @@ def dataAtual():
 class AgendarWidget(QWidget):
     def __init__(self):
         super().__init__()
+        self.nome = None
+        self.cpf = None
 
         self.layout = QVBoxLayout()
         self.layout.setContentsMargins(0, 20, 20, 20)
         self.layout.setSpacing(10)  # Adicionando espaçamento entre os widgets
+        self.vertical_layout = QVBoxLayout()
 
         self.nome_label = QLabel("Nome:")
         self.nome_input = QLineEdit()
+        self.nome_input.installEventFilter(self)
+        self.nome_input.textChanged.connect(self.textChangedUpperCase)
 
         # ----------------------------------------------------------------
 
@@ -38,6 +44,18 @@ class AgendarWidget(QWidget):
         self.servico_input = QLineEdit()
         self.servico_input.setReadOnly(True)
         self.servico_btn = QPushButton("Selecionar")
+        self.servico_btn.resize(80, 23)
+        self.servico_btn.setStyleSheet("""
+                        QPushButton {
+                            border-radius: 3px; 
+                            background-color: #3498db; 
+                            color: #fff; 
+                            padding: 6px
+                        }
+                        QPushButton:hover {
+                            background-color: #2980b9;
+                        }
+        """)
         self.servico_layout.addWidget(self.servico_label)
         self.servico_layout.addWidget(self.servico_input)
         self.servico_layout.addWidget(self.servico_btn)
@@ -137,7 +155,17 @@ class AgendarWidget(QWidget):
         self.default_button = QPushButton()
         self.default_button.setText("Redefinir hora")
         self.default_button.resize(80, 23)
-        self.default_button.setStyleSheet("border-radius: 3px; background-color: #3498db; color: #fff; padding: 7px")
+        self.default_button.setStyleSheet("""
+                        QPushButton {
+                            border-radius: 3px; 
+                            background-color: #3498db; 
+                            color: #fff; 
+                            padding: 6px
+                        }
+                        QPushButton:hover {
+                            background-color: #2980b9;
+                        }
+        """)
 
         self.default_button.clicked.connect(self.clickedDefaultHourCurrent)
 
@@ -300,18 +328,6 @@ class AgendarWidget(QWidget):
                         color: white;
                         padding: 5px;
                     }
-                    /* Personalizar os botões da barra de título */
-                    QHeaderView::section {
-                        background-color: transparent;
-                    }
-                    QHeaderView::close-button, QHeaderView::minimize-button, QHeaderView::maximize-button {
-                        background-color: transparent;
-                        border: none;
-                        margin: 2px;
-                    }
-                    QHeaderView::close-button:hover, QHeaderView::minimize-button:hover, QHeaderView::maximize-button:hover {
-                        background-color: #e74c3c;
-                    }
                 """)
                 info_box.exec_()
                 self.ano_input.setText(str(dateCurrent))
@@ -360,16 +376,172 @@ class AgendarWidget(QWidget):
 
     def iniTimer(self):
         self.timer.stop()
-        self.worker = WorkerTreadTime(self)
-        self.worker.start()
-        self.worker.finished.connect(self.hourCurrent)
+        worker = WorkerTreadTime(self)
+        worker.start()
+        worker.finished.connect(self.hourCurrent)
+
+    def searchClientByCpf(self, cpf):
+        try:
+            conn = ConnectDB()
+            conn.conecta()
+            sql = f"select nome from clientes where cpf='{cpf}'"
+            conn.execute(sql)
+            row = conn.fetchone()
+            if row:
+                nomeClient = row['nome']
+                self.nome_input.setText(nomeClient)
+            else:
+                info_box = QMessageBox(self)
+                info_box.setWindowIcon(QtGui.QIcon("icon-information"))
+                info_box.setIcon(QMessageBox.Information)
+                info_box.setWindowTitle("Informação")
+                info_box.setText("Não existe cadastro com esse CPF!")
+                info_box.setStyleSheet("""
+                    QMessageBox {
+                        background-color: #f4f4f4;
+                        border: 2px solid #3498db;
+                    }
+                    QMessageBox QLabel {
+                        color: #3498db;
+                        font-size: 20px;
+                    }
+                    QMessageBox QPushButton {
+                        background-color: #3498db;
+                        width: 70px;
+                        color: white;
+                        padding: 5px 20px;
+                        border-radius: 5px;
+                        margin: 0 auto
+                    }
+                    QMessageBox QPushButton:hover {
+                        background-color: #2980b9;
+                    }
+                                /* Personalizar a barra de título */
+                    QHeaderView {
+                        background-color: #3498db;
+                        color: white;
+                        padding: 5px;
+                    }
+                """)
+                info_box.exec_()
+                self.nome_input.setText("")
+        except Exception as e:
+            exc_type, exc_value = sys.exc_info()
+            print("Tipo de exceção:", exc_type)
+            print("Mensagem de erro:", exc_value)
+
+    def show_tree_widget(self, name):
+        try:
+            self.tree_widget = QTreeWidget(self)
+            self.tree_widget.itemSelectionChanged.connect(self.selectedItem)
+            self.tree_widget.installEventFilter(self)
+            if name.text() == "" or name.text().isdigit():
+                self.tree_widget.clear()
+                info_box = QMessageBox(self)
+                info_box.setWindowIcon(QtGui.QIcon("icon-information"))
+                info_box.setIcon(QMessageBox.Information)
+                info_box.setWindowTitle("Informação")
+                info_box.setText("Nenhum registo encontrado")
+                info_box.setStyleSheet("""
+                    QMessageBox {
+                        background-color: #f4f4f4;
+                        border: 2px solid #3498db;
+                    }
+                    QMessageBox QLabel {
+                        color: #3498db;
+                        font-size: 20px;
+                    }
+                    QMessageBox QPushButton {
+                        background-color: #3498db;
+                        width: 70px;
+                        color: white;
+                        padding: 5px 20px;
+                        border-radius: 5px;
+                        margin: 0 auto
+                    }
+                    QMessageBox QPushButton:hover {
+                        background-color: #2980b9;
+                    }
+                                /* Personalizar a barra de título */
+                    QHeaderView {
+                        background-color: #3498db;
+                        color: white;
+                        padding: 5px;
+                    }
+                """)
+                info_box.exec_()
+            else:
+                conn = ConnectDB()
+                conn.conecta()
+                sql = f"select nome, cpf from clientes where nome like '%{name.text()}%' limit 100"
+                conn.execute(sql)
+                rows = conn.fetchall()
+                if rows:
+                    itemCount = 0
+                    self.tree_widget.setColumnCount(2)
+                    self.tree_widget.setHeaderLabels(['Nome', 'CPF'])
+                    self.tree_widget.setColumnWidth(0, 250)
+                    self.tree_widget.setColumnWidth(1, 100)
+                    self.tree_widget.setGeometry(0, 100, 483, 200)
+                    self.tree_widget.header().setDefaultAlignment(Qt.AlignCenter | Qt.AlignVCenter)
+                    self.tree_widget.setStyleSheet("QScrollBar {height:0px;}")
+                    self.tree_widget.setStyleSheet("QScrollBar {width:0px;}")
+
+                    for row in rows:
+                        itemCount += 1
+                        client = QTreeWidgetItem(self.tree_widget)
+                        nome = str(row['nome'])
+                        cpf = str(row['cpf'])
+                        client.setText(0, nome)
+                        client.setText(1, cpf)
+                        client.setTextAlignment(1, Qt.AlignmentFlag.AlignCenter)
+                        self.tree_widget.setFocus()
+                    self.tree_widget.show()
+                self.nome = rows[0]['nome']
+                self.cpf = rows[0]['cpf']
+        except Exception as e:
+            print(e)
+
+    def textChangedUpperCase(self, txt):
+        up_text = txt.upper()
+        self.nome_input.setText(up_text)
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Escape:
+            if hasattr(self, 'tree_widget') and self.tree_widget.isVisible():
+                self.tree_widget.close()
+        else:
+            super().keyPressEvent(event)
+
+    def selectedItem(self):
+        getSelect = self.tree_widget.selectedItems()
+        if getSelect:
+            baseNode = getSelect[0]
+            getChildNome = baseNode.text(0)
+            getChildCpf = baseNode.text(1)
+            self.nome = str(getChildNome)
+            self.cpf = str(getChildCpf)
 
     def eventFilter(self, obj, e):
         if obj == self.cpf_input:
             if e.type() == QEvent.KeyPress:
                 if e.key() == Qt.Key_Return or e.key() == Qt.Key_Enter:
-                    print(self.cpf_input.text())
+                    self.searchClientByCpf(self.cpf_input.text())
                     return True
+        if obj == self.nome_input:
+            if e.type() == QEvent.KeyPress:
+                if e.key() == Qt.Key_Return or e.key() == Qt.Key_Enter:
+                    self.show_tree_widget(self.nome_input)  # Chamando a função para adicionar o QTreeWidget
+                    return True
+
+        if hasattr(self, 'tree_widget') and self.tree_widget.isVisible():
+            if obj == self.tree_widget:
+                if e.type() == QEvent.KeyPress:
+                    if e.key() == Qt.Key_Return or e.key() == Qt.Key_Enter:
+                        self.nome_input.setText(self.nome)
+                        self.cpf_input.setText(self.cpf)
+                        self.tree_widget.close()
+                        return True
         return False
 
 
@@ -452,23 +624,17 @@ class Agendamento(QDialog):
 
         self.agendar_widget = AgendarWidget()
         self.agendamentos_widget = AgendamentosWidget()
+        self.agendar_widget.cancelar_btn.clicked.connect(self.closeWindow)
 
         self.stack.addWidget(self.agendar_widget)
         self.stack.addWidget(self.agendamentos_widget)
 
-        '''self.buttonSalvar = QPushButton("Salvar", self)
-        self.buttonSalvar.setGeometry(390, 540, 200, 60)
-        self.buttonSalvar.setStyleSheet("""
-                                QPushButton { background-color: #3498db; color: white; font-size: 16px; padding: 10px; border: none; border-radius: 10px}
-                                QPushButton:hover { background-color: #2980b9; }
-            """)
+    def keyPressEvent(self, e):
+        if e.key() == Qt.Key_Escape:
+            pass
 
-        self.buttonFechar = QPushButton("Fechar", self)
-        self.buttonFechar.setGeometry(390, 630, 200, 60)
-        self.buttonFechar.setStyleSheet("""
-                                QPushButton { background-color: #FF0000; color: white; font-size: 16px; padding: 10px; border: none; border-radius: 10px}
-                                QPushButton:hover { background-color: #ff6961; }
-            """)'''
+    def closeWindow(self):
+        self.close()
 
     def center_dialog(self):
         # Obtém o tamanho da tela

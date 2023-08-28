@@ -73,7 +73,7 @@ class ClienteWidget(QWidget):
         try:
             conn = ConnectDB()
             conn.conecta()
-            nome = self.txtNome.text().upper()
+            nome = self.txtNome.text()
             cpf = self.txtCpf.text()
             email = self.txtEmail.text()
             dataNasc = datetime.strptime(str(self.txtDataNasc.text()), '%d/%m/%Y').strftime('%Y%m%d')

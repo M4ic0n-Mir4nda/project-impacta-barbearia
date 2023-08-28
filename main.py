@@ -20,7 +20,6 @@ class MainWindow(QMainWindow):
 
         self.lblNavalha = QPushButton(self)
         self.lblNavalha.setGeometry(160, 100, 150, 180)
-        self.lblNavalha.setText("Teste")
         self.lblNavalha.setStyleSheet("background-color: #282828; border-radius: 5px;")
         self.lblTextNavalha = QLabel(self)
         self.lblTextNavalha.setText("Serviços")
