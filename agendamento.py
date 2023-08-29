@@ -68,7 +68,7 @@ class AgendarWidget(QWidget):
         try:
             conn = ConnectDB()
             conn.conecta()
-            sqlBarbeiros = "select * from barbeiro"
+            sqlBarbeiros = "select id_barbeiro, nome from barbeiro"
             conn.execute(sqlBarbeiros)
             barbeiros = conn.fetchall()
             self.barbeiro_input.addItem("")
