@@ -70,8 +70,8 @@ class ClienteWidget(QWidget):
         self.txtDataNasc.setStyleSheet("border: 3px solid #282828; border-radius: 5px; font-size: 15px")
 
     def insertData(self):
+        conn = ConnectDB()
         try:
-            conn = ConnectDB()
             conn.conecta()
             nome = self.txtNome.text()
             cpf = self.txtCpf.text()
@@ -84,6 +84,8 @@ class ClienteWidget(QWidget):
         except Exception as e:
             print(e)
             return False
+        finally:
+            conn.desconecta()
 
 
 class FuncionarioWidget(QWidget):
@@ -208,18 +210,6 @@ class Cadastro(QDialog):
                     color: white;
                     padding: 5px;
                 }
-                /* Personalizar os botões da barra de título */
-                QHeaderView::section {
-                    background-color: transparent;
-                }
-                QHeaderView::close-button, QHeaderView::minimize-button, QHeaderView::maximize-button {
-                    background-color: transparent;
-                    border: none;
-                    margin: 2px;
-                }
-                QHeaderView::close-button:hover, QHeaderView::minimize-button:hover, QHeaderView::maximize-button:hover {
-                    background-color: #e74c3c;
-                }
             """)
             info_box.exec_()
             return
@@ -256,18 +246,6 @@ class Cadastro(QDialog):
                     color: white;
                     padding: 5px;
                 }
-                /* Personalizar os botões da barra de título */
-                QHeaderView::section {
-                    background-color: transparent;
-                }
-                QHeaderView::close-button, QHeaderView::minimize-button, QHeaderView::maximize-button {
-                    background-color: transparent;
-                    border: none;
-                    margin: 2px;
-                }
-                QHeaderView::close-button:hover, QHeaderView::minimize-button:hover, QHeaderView::maximize-button:hover {
-                    background-color: #e74c3c;
-                }
             """)
             info_box.exec_()
             return
@@ -303,18 +281,6 @@ class Cadastro(QDialog):
                     background-color: #3498db;
                     color: white;
                     padding: 5px;
-                }
-                /* Personalizar os botões da barra de título */
-                QHeaderView::section {
-                    background-color: transparent;
-                }
-                QHeaderView::close-button, QHeaderView::minimize-button, QHeaderView::maximize-button {
-                    background-color: transparent;
-                    border: none;
-                    margin: 2px;
-                }
-                QHeaderView::close-button:hover, QHeaderView::minimize-button:hover, QHeaderView::maximize-button:hover {
-                    background-color: #e74c3c;
                 }
             """)
             info_box.exec_()
@@ -372,18 +338,6 @@ class Cadastro(QDialog):
                     color: white;
                     padding: 5px;
                 }
-                /* Personalizar os botões da barra de título */
-                QHeaderView::section {
-                    background-color: transparent;
-                }
-                QHeaderView::close-button, QHeaderView::minimize-button, QHeaderView::maximize-button {
-                    background-color: transparent;
-                    border: none;
-                    margin: 2px;
-                }
-                QHeaderView::close-button:hover, QHeaderView::minimize-button:hover, QHeaderView::maximize-button:hover {
-                    background-color: #e74c3c;
-                }
             """)
             info_box.exec_()
             self.cliente_widget.txtNome.setText("")
@@ -424,18 +378,6 @@ class Cadastro(QDialog):
                     background-color: #3498db;
                     color: white;
                     padding: 5px;
-                }
-                /* Personalizar os botões da barra de título */
-                QHeaderView::section {
-                    background-color: transparent;
-                }
-                QHeaderView::close-button, QHeaderView::minimize-button, QHeaderView::maximize-button {
-                    background-color: transparent;
-                    border: none;
-                    margin: 2px;
-                }
-                QHeaderView::close-button:hover, QHeaderView::minimize-button:hover, QHeaderView::maximize-button:hover {
-                    background-color: #e74c3c;
                 }
             """)
             info_box.exec_()
