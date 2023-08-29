@@ -1,17 +1,9 @@
 import sys
-import mysql.connector
 from PyQt5.QtWidgets import QApplication, QDialog, QLabel, QPushButton, QVBoxLayout, QWidget, QStackedWidget, QLineEdit, \
-    QMessageBox, QComboBox, QHBoxLayout, QTreeWidget, QTreeWidgetItem
+    QMessageBox, QHBoxLayout, QTreeWidget, QTreeWidgetItem, QScrollArea, QSizePolicy, QFrame
 from PyQt5 import QtCore, QtGui
-from PyQt5.QtCore import Qt, QRegExp, QThread, QEvent, pyqtSignal, QDateTime, QTimer
-from PyQt5.QtGui import QPixmap, QFontDatabase, QRegExpValidator, QIcon
+from PyQt5.QtCore import Qt, QThread, QEvent, QDateTime, QTimer
 from connDB import ConnectDB
-from datetime import datetime
-
-def dataAtual():
-    dateTime = QDateTime.currentDateTime()
-    dateDisplay = dateTime.toString("hh:ss")
-    print(dateDisplay)
 
 
 class AgendarWidget(QWidget):
@@ -209,7 +201,7 @@ class AgendarWidget(QWidget):
             }
         """)
 
-        self.servico_btn.clicked.connect(self.select_servico)
+        self.servico_btn.clicked.connect(self.openServices)
 
         data_layout = QHBoxLayout()
         data_layout.addWidget(self.dia_input)
@@ -241,8 +233,81 @@ class AgendarWidget(QWidget):
 
         self.setLayout(self.layout)
 
-    def select_servico(self):
-        print('Teste')
+    def openServices(self):
+        try:
+            self.services = QDialog(self)
+            self.services.setFixedSize(420, 300)
+            self.services.setWindowTitle("Serviços")
+            self.services.setStyleSheet("""
+                background-color: white;
+                font-size: 14px;
+                font-weight: bold;
+            """)
+
+            titleLabel = QLabel("Serviços")
+            titleLabel.setStyleSheet("font-size: 20px; font-weight: bold; padding: 10px")
+
+            scrollArea = QScrollArea(self.services)
+            scrollArea.setGeometry(0, 40, 420, 300)
+
+            scrollContent = QWidget()
+            scrollLayout = QVBoxLayout(scrollContent)
+
+            conn = ConnectDB()
+            conn.conecta()
+            sqlServices = "select * from servicos"
+            conn.execute(sqlServices)
+            services = conn.fetchall()
+            for service in services:
+                nome = service["nome_servico"]
+                valorFormatado = f"{service['valor_servico']:.2f}".replace(".", ",")
+                tempo = service["tempo_servico"]
+                horas = "m" if service["horas"] == "minutos" else "h"
+                layout = QHBoxLayout()
+                label = QLabel(f"{nome}\nR$ {valorFormatado} - {tempo}{horas}")
+                label.setStyleSheet("padding: 10px")
+                label.setFixedWidth(250)  # Limita a largura máxima do rótulo
+
+                button = QPushButton("Confirmar")
+                button.setStyleSheet("""
+                    background-color: #3498db;
+                    color: white;
+                    padding: 5px 10px;
+                    border: none;
+                    border-radius: 3px;
+                    font-weight: bold;
+                """)
+                button.setFixedSize(100, 30)
+                button.clicked.connect(lambda checked, s=service: self.onServiceSelected(s))
+
+                layout.addWidget(label)
+                layout.addWidget(button)
+                scrollLayout.addLayout(layout)
+
+                line = QFrame()
+                line.setFrameShape(QFrame.HLine)
+                line.setFrameShadow(QFrame.Sunken)
+                scrollLayout.addWidget(line)
+
+            scrollArea.setWidget(scrollContent)
+
+            main_layout = QVBoxLayout(self.services)
+            main_layout.addWidget(titleLabel)
+            main_layout.addWidget(scrollArea)
+
+            self.services.exec_()
+        except Exception as e:
+            print(e)
+
+    def onServiceSelected(self, servico):
+        nome = servico["nome_servico"]
+        valorFormatado = f"{servico['valor_servico']:.2f}".replace(".", ",")
+        tempo = servico["tempo_servico"]
+        horas = "m" if servico["horas"] == "minutos" else "h"
+        self.servico_input.setText(str(nome))
+        self.valor_input.setText(str(valorFormatado))
+        self.tempo_input.setText(f"{str(tempo)}{str(horas)}")
+        self.services.close()
 
     def increase(self, input_field):
         valueText = input_field.text()
@@ -543,6 +608,13 @@ class AgendarWidget(QWidget):
                         self.tree_widget.close()
                         return True
         return False
+
+
+class Servico:
+    def __init__(self, nome, valor, tempo):
+        self.nome = nome
+        self.valor = valor
+        self.tempo = tempo
 
 
 class AgendamentosWidget(QWidget):

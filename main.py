@@ -4,7 +4,6 @@ from PyQt5.QtGui import QPixmap, QFontDatabase
 from PyQt5.QtCore import Qt
 from cadastro import Cadastro
 from agendamento import Agendamento
-from connDB import ConnectDB
 
 
 class MainWindow(QMainWindow):
@@ -29,6 +28,7 @@ class MainWindow(QMainWindow):
         self.imgNavalha = QLabel(self)
         self.imgNavalha.setGeometry(185, 120, 200, 180)
         self.imgNavalha.setStyleSheet("background-color: #282828; border-radius: 5px;")
+        self.imgNavalha.setMouseTracking(True)
         self.pixmap = QPixmap('imgNavalha.png')
         self.pixmap = self.pixmap.scaled(100, 100)
         self.imgNavalha.setPixmap(self.pixmap)
@@ -86,6 +86,9 @@ class MainWindow(QMainWindow):
         self.pixmap = self.pixmap.scaled(75, 75)
         self.imgAbout.setPixmap(self.pixmap)
         self.imgAbout.resize(self.pixmap.width(), self.pixmap.height())
+
+    def leave(self, event):
+        print('Teste')
 
     def pressCadastro(self, event):
         windowCad = Cadastro(self)
