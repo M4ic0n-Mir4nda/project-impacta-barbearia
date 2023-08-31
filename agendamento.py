@@ -17,27 +17,27 @@ class AgendarWidget(QWidget):
         self.layout.setSpacing(10)  # Adicionando espaçamento entre os widgets
         self.vertical_layout = QVBoxLayout()
 
-        self.nome_label = QLabel("Nome:")
-        self.nome_input = QLineEdit()
-        self.nome_input.installEventFilter(self)
-        # self.nome_input.textChanged.connect(self.textChangedUpperCase)
+        self.nomeLabel = QLabel("Nome:")
+        self.nomeInput = QLineEdit()
+        self.nomeInput.installEventFilter(self)
+        # self.nomeInput.textChanged.connect(self.textChangedUpperCase)
 
         # ----------------------------------------------------------------
 
-        self.cpf_label = QLabel("CPF:")
-        self.cpf_input = QLineEdit()
-        self.cpf_input.setInputMask("999.999.999-99")
-        self.cpf_input.installEventFilter(self)
+        self.cpfLabel = QLabel("CPF:")
+        self.cpfInput = QLineEdit()
+        self.cpfInput.setInputMask("999.999.999-99")
+        self.cpfInput.installEventFilter(self)
 
         # ----------------------------------------------------------------
 
-        self.servico_layout = QHBoxLayout()
-        self.servico_label = QLabel("Serviço:")
-        self.servico_input = QLineEdit()
-        self.servico_input.setReadOnly(True)
-        self.servico_btn = QPushButton("Selecionar")
-        self.servico_btn.resize(80, 23)
-        self.servico_btn.setStyleSheet("""
+        self.servicoLayout = QHBoxLayout()
+        self.servicoLabel = QLabel("Serviço:")
+        self.servicoInput = QLineEdit()
+        self.servicoInput.setReadOnly(True)
+        self.servicoButton = QPushButton("Selecionar")
+        self.servicoButton.resize(80, 23)
+        self.servicoButton.setStyleSheet("""
                         QPushButton {
                             border-radius: 3px; 
                             background-color: #3498db; 
@@ -48,22 +48,22 @@ class AgendarWidget(QWidget):
                             background-color: #2980b9;
                         }
         """)
-        self.servico_layout.addWidget(self.servico_label)
-        self.servico_layout.addWidget(self.servico_input)
-        self.servico_layout.addWidget(self.servico_btn)
+        self.servicoLayout.addWidget(self.servicoLabel)
+        self.servicoLayout.addWidget(self.servicoInput)
+        self.servicoLayout.addWidget(self.servicoButton)
 
-        self.valor_label = QLabel("Valor:")
-        self.valor_input = QLineEdit()
-        self.valor_input.setReadOnly(True)
+        self.valorLabel = QLabel("Valor:")
+        self.valorInput = QLineEdit()
+        self.valorInput.setReadOnly(True)
 
-        self.tempo_layout = QHBoxLayout()
+        self.tempoLayout = QHBoxLayout()
 
-        self.tempo_label = QLabel("Tempo:")
-        self.tempo_input = QLineEdit()
-        self.tempo_input.setReadOnly(True)
+        self.tempoLabel = QLabel("Tempo:")
+        self.tempoInput = QLineEdit()
+        self.tempoInput.setReadOnly(True)
 
-        self.barbeiro_label = QLabel("Barbeiro")
-        self.barbeiro_input = QComboBox()
+        self.barbeiroLabel = QLabel("Barbeiro")
+        self.barbeiroInput = QComboBox()
 
         try:
             conn = ConnectDB()
@@ -71,108 +71,108 @@ class AgendarWidget(QWidget):
             sqlBarbeiros = "select id_barbeiro, nome from barbeiro"
             conn.execute(sqlBarbeiros)
             barbeiros = conn.fetchall()
-            self.barbeiro_input.addItem("")
+            self.barbeiroInput.addItem("")
             for barbeiro in barbeiros:
-                self.barbeiro_input.addItem(f"{barbeiro['id_barbeiro']} - {barbeiro['nome']}")
+                self.barbeiroInput.addItem(f"{barbeiro['id_barbeiro']} - {barbeiro['nome']}")
         except Exception as e:
             print(e)
             pass
 
-        self.tempo_layout.addWidget(self.valor_label)
-        self.tempo_layout.addWidget(self.valor_input)
-        self.tempo_layout.addWidget(self.tempo_label)
-        self.tempo_layout.addWidget(self.tempo_input)
-        # self.tempo_layout.addWidget(self.barbeiro_label)
-        # self.tempo_layout.addWidget(self.barbeiro_input)
+        self.tempoLayout.addWidget(self.valorLabel)
+        self.tempoLayout.addWidget(self.valorInput)
+        self.tempoLayout.addWidget(self.tempoLabel)
+        self.tempoLayout.addWidget(self.tempoInput)
+        # self.tempoLayout.addWidget(self.barbeiroLabel)
+        # self.tempoLayout.addWidget(self.barbeiroInput)
 
         # ----------------------------------------------------------------
 
         self.dateTime = QDateTime.currentDateTime()
-        self.data_label = QLabel("Data:")
+        self.dataLabel = QLabel("Data:")
 
-        self.dia_input = QLineEdit()
-        self.dia_input.setText(f"{self.dateTime.toString('dd')}")
-        self.dia_input.setAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignCenter)
-        self.dia_input.setMaxLength(2)
+        self.diaInput = QLineEdit()
+        self.diaInput.setText(f"{self.dateTime.toString('dd')}")
+        self.diaInput.setAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignCenter)
+        self.diaInput.setMaxLength(2)
 
-        self.dia_increase_btn = QPushButton(self)
-        self.dia_increase_btn.setText("+")
-        self.dia_increase_btn.setStyleSheet("border-radius: 3px; background-color: #3498db; color: #fff;")
-        self.dia_increase_btn.setGeometry(1, 442, 153, 23)
-        self.dia_increase_btn.clicked.connect(lambda: self.increase(self.dia_input))
+        self.diaIncreaseButton = QPushButton(self)
+        self.diaIncreaseButton.setText("+")
+        self.diaIncreaseButton.setStyleSheet("border-radius: 3px; background-color: #3498db; color: #fff;")
+        self.diaIncreaseButton.setGeometry(1, 442, 153, 23)
+        self.diaIncreaseButton.clicked.connect(lambda: self.increase(self.diaInput))
 
-        self.dia_decrease_btn = QPushButton(self)
-        self.dia_decrease_btn.setText("-")
-        self.dia_decrease_btn.setStyleSheet("border-radius: 3px; background-color: #3498db; color: #fff;")
-        self.dia_decrease_btn.setGeometry(1, 495, 153, 23)
-        self.dia_decrease_btn.clicked.connect(lambda: self.decrease(self.dia_input))
+        self.diaDecreaseButton = QPushButton(self)
+        self.diaDecreaseButton.setText("-")
+        self.diaDecreaseButton.setStyleSheet("border-radius: 3px; background-color: #3498db; color: #fff;")
+        self.diaDecreaseButton.setGeometry(1, 495, 153, 23)
+        self.diaDecreaseButton.clicked.connect(lambda: self.decrease(self.diaInput))
 
-        self.dia_input.textChanged.connect(self.textChangedFields)
-
-        # ----------------------------------------------------------------
-
-        self.mes_input = QLineEdit()
-        self.mes_input.setText(f"{self.dateTime.toString('MM')}")
-        self.mes_input.setAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignCenter)
-        self.mes_input.setMaxLength(2)
-
-        self.mes_increase_btn = QPushButton(self)
-        self.mes_increase_btn.setText("+")
-        self.mes_increase_btn.setStyleSheet("border-radius: 3px; background-color: #3498db; color: #fff;")
-        self.mes_increase_btn.setGeometry(165, 442, 154, 23)
-        self.mes_increase_btn.clicked.connect(lambda: self.increase(self.mes_input))
-
-        self.mes_decrease_btn = QPushButton(self)
-        self.mes_decrease_btn.setText("-")
-        self.mes_decrease_btn.setStyleSheet("border-radius: 3px; background-color: #3498db; color: #fff;")
-        self.mes_decrease_btn.setGeometry(165, 495, 154, 23)
-        self.mes_decrease_btn.clicked.connect(lambda: self.decrease(self.mes_input))
-
-        self.mes_input.textChanged.connect(self.textChangedFields)
+        self.diaInput.textChanged.connect(self.textChangedFields)
 
         # ----------------------------------------------------------------
 
-        self.ano_input = QLineEdit()
-        self.ano_input.setText(f"{self.dateTime.toString('yyyy')}")
-        self.ano_input.setAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignCenter)
-        self.ano_input.setMaxLength(4)
+        self.mesInput = QLineEdit()
+        self.mesInput.setText(f"{self.dateTime.toString('MM')}")
+        self.mesInput.setAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignCenter)
+        self.mesInput.setMaxLength(2)
 
-        self.ano_increase_btn = QPushButton(self)
-        self.ano_increase_btn.setText("+")
-        self.ano_increase_btn.setStyleSheet("border-radius: 3px; background-color: #3498db; color: #fff;")
-        self.ano_increase_btn.setGeometry(329, 442, 154, 23)
-        self.ano_increase_btn.clicked.connect(lambda: self.increase(self.ano_input))
+        self.mesIncreaseButton = QPushButton(self)
+        self.mesIncreaseButton.setText("+")
+        self.mesIncreaseButton.setStyleSheet("border-radius: 3px; background-color: #3498db; color: #fff;")
+        self.mesIncreaseButton.setGeometry(165, 442, 154, 23)
+        self.mesIncreaseButton.clicked.connect(lambda: self.increase(self.mesInput))
 
-        self.ano_decrease_btn = QPushButton(self)
-        self.ano_decrease_btn.setText("-")
-        self.ano_decrease_btn.setStyleSheet("border-radius: 3px; background-color: #3498db; color: #fff;")
-        self.ano_decrease_btn.setGeometry(329, 495, 154, 23)
-        self.ano_decrease_btn.clicked.connect(lambda: self.decrease(self.ano_input))
+        self.mesDecreaseButton = QPushButton(self)
+        self.mesDecreaseButton.setText("-")
+        self.mesDecreaseButton.setStyleSheet("border-radius: 3px; background-color: #3498db; color: #fff;")
+        self.mesDecreaseButton.setGeometry(165, 495, 154, 23)
+        self.mesDecreaseButton.clicked.connect(lambda: self.decrease(self.mesInput))
 
-        self.ano_input.textChanged.connect(self.textChangedFields)
+        self.mesInput.textChanged.connect(self.textChangedFields)
 
         # ----------------------------------------------------------------
 
-        self.hora_label = QLabel("Horário:")
-        self.hora_input = QLineEdit()
-        self.hora_input.setMaxLength(2)
-        self.hora_input.setText(str(self.dateTime.toString("hh")))
-        self.hora_input.setAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignCenter)
+        self.anoInput = QLineEdit()
+        self.anoInput.setText(f"{self.dateTime.toString('yyyy')}")
+        self.anoInput.setAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignCenter)
+        self.anoInput.setMaxLength(4)
 
-        self.hora_input.textChanged.connect(self.textChangedFields)
+        self.anoIncreaseButton = QPushButton(self)
+        self.anoIncreaseButton.setText("+")
+        self.anoIncreaseButton.setStyleSheet("border-radius: 3px; background-color: #3498db; color: #fff;")
+        self.anoIncreaseButton.setGeometry(329, 442, 154, 23)
+        self.anoIncreaseButton.clicked.connect(lambda: self.increase(self.anoInput))
+
+        self.anoDecreaseButton = QPushButton(self)
+        self.anoDecreaseButton.setText("-")
+        self.anoDecreaseButton.setStyleSheet("border-radius: 3px; background-color: #3498db; color: #fff;")
+        self.anoDecreaseButton.setGeometry(329, 495, 154, 23)
+        self.anoDecreaseButton.clicked.connect(lambda: self.decrease(self.anoInput))
+
+        self.anoInput.textChanged.connect(self.textChangedFields)
+
+        # ----------------------------------------------------------------
+
+        self.horaLabel = QLabel("Horário:")
+        self.horaInput = QLineEdit()
+        self.horaInput.setMaxLength(2)
+        self.horaInput.setText(str(self.dateTime.toString("hh")))
+        self.horaInput.setAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignCenter)
+
+        self.horaInput.textChanged.connect(self.textChangedFields)
 
         self.separator = QLabel(":")
         self.separator.setStyleSheet("font-size: 20px")
 
-        self.minuto_input = QLineEdit()
-        self.minuto_input.setMaxLength(2)
-        self.minuto_input.setText(str(self.dateTime.toString("mm")))
-        self.minuto_input.setAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignCenter)
+        self.minutoInput = QLineEdit()
+        self.minutoInput.setMaxLength(2)
+        self.minutoInput.setText(str(self.dateTime.toString("mm")))
+        self.minutoInput.setAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignCenter)
 
-        self.default_button = QPushButton()
-        self.default_button.setText("Redefinir hora")
-        self.default_button.resize(80, 23)
-        self.default_button.setStyleSheet("""
+        self.defaultButton = QPushButton()
+        self.defaultButton.setText("Redefinir hora")
+        self.defaultButton.resize(80, 23)
+        self.defaultButton.setStyleSheet("""
                         QPushButton {
                             border-radius: 3px; 
                             background-color: #3498db; 
@@ -184,7 +184,7 @@ class AgendarWidget(QWidget):
                         }
         """)
 
-        self.minuto_input.textChanged.connect(self.textChangedFields)
+        self.minutoInput.textChanged.connect(self.textChangedFields)
 
         self.timer = QTimer(self)
         # self.timer.timeout.connect(self.iniTimer)
@@ -193,10 +193,10 @@ class AgendarWidget(QWidget):
 
         # ----------------------------------------------------------------
 
-        self.agendar_btn = QPushButton("Agendar")
-        self.cancelar_btn = QPushButton("Cancelar")
+        self.agendarButton = QPushButton("Agendar")
+        self.cancelarButton = QPushButton("Cancelar")
 
-        self.agendar_btn.setStyleSheet("""
+        self.agendarButton.setStyleSheet("""
             QPushButton {
                 background-color: #3498db;
                 color: white;
@@ -210,7 +210,7 @@ class AgendarWidget(QWidget):
             }
         """)
 
-        self.cancelar_btn.setStyleSheet("""
+        self.cancelarButton.setStyleSheet("""
             QPushButton {
                 background-color: #e74c3c;
                 color: white;
@@ -224,43 +224,44 @@ class AgendarWidget(QWidget):
             }
         """)
 
-        data_layout = QHBoxLayout()
-        data_layout.addWidget(self.dia_input)
-        data_layout.addWidget(self.mes_input)
-        data_layout.addWidget(self.ano_input)
+        dataLayout = QHBoxLayout()
+        dataLayout.addWidget(self.diaInput)
+        dataLayout.addWidget(self.mesInput)
+        dataLayout.addWidget(self.anoInput)
 
-        hora_layout = QHBoxLayout()
-        hora_layout.addWidget(self.hora_input)
-        hora_layout.addWidget(self.separator)
-        hora_layout.addWidget(self.minuto_input)
-        hora_layout.addWidget(self.default_button)
+        horaLayout = QHBoxLayout()
+        horaLayout.addWidget(self.horaInput)
+        horaLayout.addWidget(self.separator)
+        horaLayout.addWidget(self.minutoInput)
+        horaLayout.addWidget(self.defaultButton)
 
-        self.layout.addWidget(self.nome_label)
-        self.layout.addWidget(self.nome_input)
-        self.layout.addWidget(self.cpf_label)
-        self.layout.addWidget(self.cpf_input)
-        self.layout.addLayout(self.servico_layout)
-        # self.layout.addWidget(self.valor_label)
-        # self.layout.addWidget(self.valor_input)
-        self. layout.addLayout(self.tempo_layout)
-        #self.layout.addWidget(self.tempo_label)
-        #self.layout.addWidget(self.tempo_input)
-        self.layout.addWidget(self.barbeiro_label)
-        self.layout.addWidget(self.barbeiro_input)
-        self.layout.addWidget(self.data_label)
-        self.layout.addLayout(data_layout)
-        self.layout.addWidget(self.hora_label)
-        self.layout.addLayout(hora_layout)
+        self.layout.addWidget(self.nomeLabel)
+        self.layout.addWidget(self.nomeInput)
+        self.layout.addWidget(self.cpfLabel)
+        self.layout.addWidget(self.cpfInput)
+        self.layout.addLayout(self.servicoLayout)
+        # self.layout.addWidget(self.valorLabel)
+        # self.layout.addWidget(self.valorInput)
+        self. layout.addLayout(self.tempoLayout)
+        #self.layout.addWidget(self.tempoLabel)
+        #self.layout.addWidget(self.tempoInput)
+        self.layout.addWidget(self.barbeiroLabel)
+        self.layout.addWidget(self.barbeiroInput)
+        self.layout.addWidget(self.dataLabel)
+        self.layout.addLayout(dataLayout)
+        self.layout.addWidget(self.horaLabel)
+        self.layout.addLayout(horaLayout)
 
-        self.layout.addWidget(self.agendar_btn)
-        self.layout.addWidget(self.cancelar_btn)
+        self.layout.addWidget(self.agendarButton)
+        self.layout.addWidget(self.cancelarButton)
 
-        self.servico_btn.clicked.connect(self.openServices)
-        self.default_button.clicked.connect(self.clickedDefaultHourCurrent)
-        self.agendar_btn.clicked.connect(self.clickSchedule)
+        self.servicoButton.clicked.connect(self.openServices)
+        self.defaultButton.clicked.connect(self.clickedDefaultHourCurrent)
+        self.agendarButton.clicked.connect(self.clickSchedule)
 
         self.setLayout(self.layout)
 
+    # Abre a tela de serviços prestados pelo o usuario
     def openServices(self):
         try:
             self.services = QDialog(self)
@@ -327,26 +328,28 @@ class AgendarWidget(QWidget):
         except Exception as e:
             print(e)
 
+    # Serviço selecionado e seta os textos nas variaveis da classe
     def onServiceSelected(self, servico):
         nome = servico["nome_servico"]
         valorFormatado = f"{servico['valor_servico']:.2f}".replace(".", ",")
         self.tempo = servico["tempo_servico"]
         horas = "m" if servico["horas"] == "minutos" else "h"
-        self.servico_input.setText(str(nome))
-        self.valor_input.setText(str(valorFormatado))
-        self.tempo_input.setText(f"{str(self.tempo)}{str(horas)}")
+        self.servicoInput.setText(str(nome))
+        self.valorInput.setText(str(valorFormatado))
+        self.tempoInput.setText(f"{str(self.tempo)}{str(horas)}")
         self.services.close()
 
+    # Confirmação de agendamento de cliente e salva no BD
     def clickSchedule(self):
-        service = self.servico_input.text()
-        value = self.valor_input.text()
-        nameClient = self.nome_input.text()
-        cpfClient = self.cpf_input.text()
-        hours = self.hora_input.text()
-        minutes = self.minuto_input.text()
-        date = f"{self.ano_input.text()}{self.mes_input.text()}{self.dia_input.text()}{hours}{minutes}00"
-        time = self.tempo
-        barberList = self.barbeiro_input.currentText().split("-")
+        servico = self.servicoInput.text()
+        valor = self.valorInput.text()
+        nomeCliente = self.nomeInput.text()
+        cpfCliente = self.cpfInput.text()
+        horas = self.horaInput.text()
+        minutos = self.minutoInput.text()
+        data = f"{self.anoInput.text()}{self.mesInput.text()}{self.diaInput.text()}{horas}{minutos}00"
+        tempo = self.tempo
+        barberList = self.barbeiroInput.currentText().split("-")
         barberId = barberList[0]
         conn = ConnectDB()
         try:
@@ -357,7 +360,7 @@ class AgendarWidget(QWidget):
                     values
                     (%s, %s, %s, %s, %s, %s, %s)
             """
-            val = (service, value, nameClient, cpfClient, date, 0, barberId)
+            val = (servico, valor, nomeCliente, cpfCliente, data, 0, barberId)
             conn.execute(sqlInsert, val)
             conn.commit()
 
@@ -395,12 +398,12 @@ class AgendarWidget(QWidget):
             """)
             info_box.exec_()
 
-            self.nome_input.setText("")
-            self.cpf_input.setText("")
-            self.servico_input.setText("")
-            self.valor_input.setText("")
-            self.tempo_input.setText("")
-            self.barbeiro_input.setCurrentIndex(0)
+            self.nomeInput.setText("")
+            self.cpfInput.setText("")
+            self.servicoInput.setText("")
+            self.valorInput.setText("")
+            self.tempoInput.setText("")
+            self.barbeiroInput.setCurrentIndex(0)
             self.timer.timeout.connect(self.iniTimer)
             self.timer.setInterval(0)
             self.timer.start()
@@ -411,6 +414,7 @@ class AgendarWidget(QWidget):
         finally:
             conn.desconecta()
 
+    # Aumenta o número que recebe
     def increase(self, input_field):
         valueText = input_field.text()
         increase = int(valueText) + 1
@@ -422,12 +426,13 @@ class AgendarWidget(QWidget):
         else:
             input_field.setText(str(increase))
 
-        if self.dia_input.text() == "32":
-            self.dia_input.setText("01")
+        if self.diaInput.text() == "32":
+            self.diaInput.setText("01")
 
-        if self.mes_input.text() == "13":
-            self.mes_input.setText("01")
+        if self.mesInput.text() == "13":
+            self.mesInput.setText("01")
 
+    # Diminui o número que recebe
     def decrease(self, input_field):
         valueText = input_field.text()
         decrease = int(valueText) - 1
@@ -439,29 +444,30 @@ class AgendarWidget(QWidget):
         else:
             input_field.setText(str(decrease))
 
-        if self.dia_input.text() == "00":
-            self.dia_input.setText("31")
+        if self.diaInput.text() == "00":
+            self.diaInput.setText("31")
 
-        if self.mes_input.text() == "00":
-            self.mes_input.setText("12")
+        if self.mesInput.text() == "00":
+            self.mesInput.setText("12")
 
+    # Faz a validação dos numeros dos campos de data/hora
     def textChangedFields(self):
         dateCurrent = int(self.dateTime.toString('yyyy'))
-        if not self.dia_input.text().isdigit() or not self.mes_input.text().isdigit() or not self.ano_input.text().isdigit():
-            self.dia_input.setText("01")
-            self.mes_input.setText("01")
-            self.ano_input.setText(str(dateCurrent))
+        if not self.diaInput.text().isdigit() or not self.mesInput.text().isdigit() or not self.anoInput.text().isdigit():
+            self.diaInput.setText("01")
+            self.mesInput.setText("01")
+            self.anoInput.setText(str(dateCurrent))
             return
 
         else:
-            dayText = int(self.dia_input.text())
-            monthText = int(self.mes_input.text())
-            yearText = int(self.ano_input.text())
+            dayText = int(self.diaInput.text())
+            monthText = int(self.mesInput.text())
+            yearText = int(self.anoInput.text())
             if dayText > 31:
-                self.dia_input.setText("01")
+                self.diaInput.setText("01")
 
             elif monthText > 12:
-                self.mes_input.setText("01")
+                self.mesInput.setText("01")
 
             elif yearText < dateCurrent:
                 info_box = QMessageBox(self)
@@ -497,16 +503,16 @@ class AgendarWidget(QWidget):
                     }
                 """)
                 info_box.exec_()
-                self.ano_input.setText(str(dateCurrent))
+                self.anoInput.setText(str(dateCurrent))
 
-        if not self.hora_input.text().isdigit() or not self.minuto_input.text().isdigit():
+        if not self.horaInput.text().isdigit() or not self.minutoInput.text().isdigit():
             self.timer.timeout.connect(self.iniTimer)
             self.timer.setInterval(0)
             self.timer.start()
             return
         else:
-            hourText = int(self.hora_input.text())
-            minuteText = int(self.minuto_input.text())
+            hourText = int(self.horaInput.text())
+            minuteText = int(self.minutoInput.text())
 
             if hourText > 24:
                 try:
@@ -514,7 +520,7 @@ class AgendarWidget(QWidget):
                     self.timer.setInterval(0)
                     self.timer.start()
                 except Exception as e:
-                    self.hora_input.setText("24")
+                    self.horaInput.setText("24")
 
             elif minuteText > 59:
                 try:
@@ -522,31 +528,36 @@ class AgendarWidget(QWidget):
                     self.timer.setInterval(0)
                     self.timer.start()
                 except Exception as e:
-                    self.minuto_input.setText("59")
+                    self.minutoInput.setText("59")
 
+    # Realize a redefinição do horario atual
     def clickedDefaultHourCurrent(self):
         self.timer.timeout.connect(self.iniTimer)
         self.timer.setInterval(0)
         self.timer.start()
 
+    # Define o horario atual nas variaveis de texto da classe
     def hourCurrent(self):
         try:
             self.timer.start(10000)
             time = QDateTime.currentDateTime()
             hourCurrent = time.toString("hh")
             minuteCurrent = time.toString("mm")
-            self.hora_input.setText(str(hourCurrent))
-            self.minuto_input.setText(str(minuteCurrent))
+            self.horaInput.setText(str(hourCurrent))
+            self.minutoInput.setText(str(minuteCurrent))
         except Exception as e:
-            self.hora_input.setText("24")
-            self.minuto_input.setText("59")
+            self.horaInput.setText("24")
+            self.minutoInput.setText("59")
 
+    # Inicializa uma tread para rodar em segundo plano e faz a atualização de hora automatico na aplicação
+    # desabilitada atualizacao automatica
     def iniTimer(self):
         self.timer.stop()
         worker = WorkerTreadTime(self)
         worker.start()
         worker.finished.connect(self.hourCurrent)
 
+    # Faz a busca de um cliente no BD apartir de um cpf passado
     def searchClientByCpf(self, cpf):
         try:
             conn = ConnectDB()
@@ -556,7 +567,7 @@ class AgendarWidget(QWidget):
             row = conn.fetchone()
             if row:
                 nomeClient = row['nome']
-                self.nome_input.setText(nomeClient)
+                self.nomeInput.setText(nomeClient)
             else:
                 info_box = QMessageBox(self)
                 info_box.setWindowIcon(QtGui.QIcon("icon-information"))
@@ -591,19 +602,20 @@ class AgendarWidget(QWidget):
                     }
                 """)
                 info_box.exec_()
-                self.nome_input.setText("")
+                self.nomeInput.setText("")
         except Exception as e:
             exc_type, exc_value = sys.exc_info()
             print("Tipo de exceção:", exc_type)
             print("Mensagem de erro:", exc_value)
 
-    def show_tree_widget(self, name):
+    # Abre uma janela com NOME e CPF e busca um cliente pelo nome passado
+    def showTreeWidget(self, name):
         try:
-            self.tree_widget = QTreeWidget(self)
-            self.tree_widget.itemSelectionChanged.connect(self.selectedItem)
-            self.tree_widget.installEventFilter(self)
+            self.treeWidget = QTreeWidget(self)
+            self.treeWidget.itemSelectionChanged.connect(self.selectedItem)
+            self.treeWidget.installEventFilter(self)
             if name.text() == "" or name.text().isdigit():
-                self.tree_widget.clear()
+                self.treeWidget.clear()
                 info_box = QMessageBox(self)
                 info_box.setWindowIcon(QtGui.QIcon("icon-information"))
                 info_box.setIcon(QMessageBox.Information)
@@ -645,43 +657,48 @@ class AgendarWidget(QWidget):
                 rows = conn.fetchall()
                 if rows:
                     itemCount = 0
-                    self.tree_widget.setColumnCount(2)
-                    self.tree_widget.setHeaderLabels(['Nome', 'CPF'])
-                    self.tree_widget.setColumnWidth(0, 250)
-                    self.tree_widget.setColumnWidth(1, 100)
-                    self.tree_widget.setGeometry(0, 100, 483, 200)
-                    self.tree_widget.header().setDefaultAlignment(Qt.AlignCenter | Qt.AlignVCenter)
-                    self.tree_widget.setStyleSheet("QScrollBar {height:0px;}")
-                    self.tree_widget.setStyleSheet("QScrollBar {width:0px;}")
+                    self.treeWidget.setColumnCount(2)
+                    self.treeWidget.setHeaderLabels(['Nome', 'CPF'])
+                    self.treeWidget.setColumnWidth(0, 250)
+                    self.treeWidget.setColumnWidth(1, 100)
+                    self.treeWidget.setGeometry(0, 110, 483, 200)
+                    self.treeWidget.header().setDefaultAlignment(Qt.AlignCenter | Qt.AlignVCenter)
+                    self.treeWidget.setStyleSheet("QScrollBar {height:0px;}")
+                    self.treeWidget.setStyleSheet("QScrollBar {width:0px;}")
 
                     for row in rows:
                         itemCount += 1
-                        client = QTreeWidgetItem(self.tree_widget)
+                        client = QTreeWidgetItem(self.treeWidget)
                         nome = str(row['nome'])
                         cpf = str(row['cpf'])
                         client.setText(0, nome)
                         client.setText(1, cpf)
                         client.setTextAlignment(1, Qt.AlignmentFlag.AlignCenter)
-                        self.tree_widget.setFocus()
-                    self.tree_widget.show()
+                        self.treeWidget.setFocus()
+                    self.treeWidget.show()
                 self.nome = rows[0]['nome']
                 self.cpf = rows[0]['cpf']
         except Exception as e:
             print(e)
 
+    # Função criada para receber o valor de texto e ser retornada no campo nome o texto em maiúsculo
+    # desabilitado
     def textChangedUpperCase(self, txt):
         up_text = txt.upper()
-        self.nome_input.setText(up_text)
+        self.nomeInput.setText(up_text)
 
+    # Caso a janela que realize a busca de cliente por nome esteje aberta/instanciada apertando 'ESC' a janela é fechada
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape:
-            if hasattr(self, 'tree_widget') and self.tree_widget.isVisible():
-                self.tree_widget.close()
+            if hasattr(self, 'treeWidget') and self.treeWidget.isVisible():
+                self.treeWidget.close()
         else:
             super().keyPressEvent(event)
 
+    # Com a janela de busca de cliente por nome aberta a linha selecionada é pego os valores de texto e definido nos
+    # atributos da classe
     def selectedItem(self):
-        getSelect = self.tree_widget.selectedItems()
+        getSelect = self.treeWidget.selectedItems()
         if getSelect:
             baseNode = getSelect[0]
             getChildNome = baseNode.text(0)
@@ -689,25 +706,27 @@ class AgendarWidget(QWidget):
             self.nome = str(getChildNome)
             self.cpf = str(getChildCpf)
 
+    # Faz a verificação de quais objetos estão com foco e quais teclas estão sendo pressionadas assim realiza chamadas de
+    # funções/ações e etc
     def eventFilter(self, obj, e):
-        if obj == self.cpf_input:
+        if obj == self.cpfInput:
             if e.type() == QEvent.KeyPress:
                 if e.key() == Qt.Key_Return or e.key() == Qt.Key_Enter:
-                    self.searchClientByCpf(self.cpf_input.text())
+                    self.searchClientByCpf(self.cpfInput.text())
                     return True
-        if obj == self.nome_input:
+        if obj == self.nomeInput:
             if e.type() == QEvent.KeyPress:
                 if e.key() == Qt.Key_Return or e.key() == Qt.Key_Enter:
-                    self.show_tree_widget(self.nome_input)  # Chamando a função para adicionar o QTreeWidget
+                    self.showTreeWidget(self.nomeInput)  # Chamando a função para adicionar o QTreeWidget
                     return True
 
-        if hasattr(self, 'tree_widget') and self.tree_widget.isVisible():
-            if obj == self.tree_widget:
+        if hasattr(self, 'treeWidget') and self.treeWidget.isVisible():
+            if obj == self.treeWidget:
                 if e.type() == QEvent.KeyPress:
                     if e.key() == Qt.Key_Return or e.key() == Qt.Key_Enter:
-                        self.nome_input.setText(self.nome)
-                        self.cpf_input.setText(self.cpf)
-                        self.tree_widget.close()
+                        self.nomeInput.setText(self.nome)
+                        self.cpfInput.setText(self.cpf)
+                        self.treeWidget.close()
                         return True
         return False
 
@@ -731,8 +750,8 @@ class WorkerTreadTime(QThread):
         try:
             pass
         except Exception as e:
-            self.parent().hora_input.setText("24")
-            self.parent().minuto_input.setText("59")
+            self.parent().horaInput.setText("24")
+            self.parent().minutoInput.setText("59")
 
 
 class Agendamento(QDialog):
@@ -764,37 +783,37 @@ class Agendamento(QDialog):
         self.container.setGeometry(0, 0, 220, 712)
         self.container.setStyleSheet("background-color: #2c3e50")
 
-        self.button_agendar = QPushButton("Agendar", self.container)
-        self.button_agendamentos = QPushButton("Agendamentos", self.container)
+        self.buttonAgendar = QPushButton("Agendar", self.container)
+        self.buttonAgendamentos = QPushButton("Agendamentos", self.container)
 
-        self.button_agendar.clicked.connect(self.showAgendar)
-        self.button_agendamentos.clicked.connect(self.showAgendamentos)
+        self.buttonAgendar.clicked.connect(self.showAgendar)
+        self.buttonAgendamentos.clicked.connect(self.showAgendamentos)
 
-        self.button_agendar.setStyleSheet(
+        self.buttonAgendar.setStyleSheet(
             "QPushButton { background-color: #282828; color: white; font-size: 16px; padding: 10px; border: none; border-radius: 5px; width: 100px}"
             "QPushButton:hover { background-color: #474747; }"
         )
 
-        self.button_agendamentos.setStyleSheet(
+        self.buttonAgendamentos.setStyleSheet(
             "QPushButton { background-color: #282828; color: white; font-size: 16px; padding: 10px; border: none; border-radius: 5px }"
             "QPushButton:hover { background-color: #474747; }"
         )
 
-        menu_layout = QVBoxLayout()
-        menu_layout.setContentsMargins(10, 30, 10, 500)  # Ajuste as margens inferior para mover o menu para cima
-        menu_layout.addWidget(self.button_agendar)
-        menu_layout.addWidget(self.button_agendamentos)
-        self.container.setLayout(menu_layout)
+        menuLayout = QVBoxLayout()
+        menuLayout.setContentsMargins(10, 30, 10, 500)  # Ajuste as margens inferior para mover o menu para cima
+        menuLayout.addWidget(self.buttonAgendar)
+        menuLayout.addWidget(self.buttonAgendamentos)
+        self.container.setLayout(menuLayout)
 
         self.stack = QStackedWidget(self)
         self.stack.setGeometry(250, 0, 503, 712)
 
-        self.agendar_widget = AgendarWidget()
-        self.agendamentos_widget = AgendamentosWidget()
-        self.agendar_widget.cancelar_btn.clicked.connect(self.closeWindow)
+        self.agendarWidget = AgendarWidget()
+        self.agendamentosWidget = AgendamentosWidget()
+        self.agendarWidget.cancelarButton.clicked.connect(self.closeWindow)
 
-        self.stack.addWidget(self.agendar_widget)
-        self.stack.addWidget(self.agendamentos_widget)
+        self.stack.addWidget(self.agendarWidget)
+        self.stack.addWidget(self.agendamentosWidget)
 
     def keyPressEvent(self, e):
         if e.key() == Qt.Key_Escape:
@@ -803,24 +822,25 @@ class Agendamento(QDialog):
     def closeWindow(self):
         self.close()
 
+    # Centraliza a janela no meio da tela
     def center_dialog(self):
         # Obtém o tamanho da tela
-        screen_geo = QApplication.desktop().availableGeometry()
+        screenGeo = QApplication.desktop().availableGeometry()
 
-        # Obtém o retângulo da geometria do diálog
-        dialog_geo = self.frameGeometry()
+        # Obtém o retângulo da geometria do diálogo
+        dialogGeo = self.frameGeometry()
 
-        # Calcula a posição para centralizar o diálog
-        center_point = screen_geo.center()
-        dialog_geo.moveCenter(center_point)
+        # Calcula a posição para centralizar o diálogo
+        centerPoint = screenGeo.center()
+        dialogGeo.moveCenter(centerPoint)
 
-        self.move(dialog_geo.topLeft())  # Move o diálog para a posição calculada
+        self.move(dialogGeo.topLeft())  # Move o diálogo para a posição calculada
 
     def showAgendar(self):
-        self.stack.setCurrentWidget(self.agendar_widget)
+        self.stack.setCurrentWidget(self.agendarWidget)
 
     def showAgendamentos(self):
-        self.stack.setCurrentWidget(self.agendamentos_widget)
+        self.stack.setCurrentWidget(self.agendamentosWidget)
 
 
 if __name__ == '__main__':

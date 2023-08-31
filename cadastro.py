@@ -117,36 +117,36 @@ class Cadastro(QDialog):
         self.imgLogo.setPixmap(self.pixmap)
         self.imgLogo.resize(self.pixmap.width(), self.pixmap.height())
 
-        self.cliente_button = QPushButton("Cliente", self.container)
-        self.funcionario_button = QPushButton("Funcionário", self.container)
+        self.clienteButton = QPushButton("Cliente", self.container)
+        self.funcionarioButton = QPushButton("Funcionário", self.container)
 
-        self.cliente_button.clicked.connect(self.showCliente)
-        self.funcionario_button.clicked.connect(self.showFuncionario)
+        self.clienteButton.clicked.connect(self.showCliente)
+        self.funcionarioButton.clicked.connect(self.showFuncionario)
 
-        self.cliente_button.setStyleSheet(
+        self.clienteButton.setStyleSheet(
             "QPushButton { background-color: #3498db; color: white; font-size: 16px; padding: 10px; border: none; }"
             "QPushButton:hover { background-color: #2980b9; }"
         )
 
-        self.funcionario_button.setStyleSheet(
+        self.funcionarioButton.setStyleSheet(
             "QPushButton { background-color: #e74c3c; color: white; font-size: 16px; padding: 10px; border: none; }"
             "QPushButton:hover { background-color: #c0392b; }"
         )
 
-        menu_layout = QVBoxLayout()
-        menu_layout.setContentsMargins(10, 200, 10, 300)  # Ajuste as margens inferior para mover o menu para cima
-        menu_layout.addWidget(self.cliente_button)
-        menu_layout.addWidget(self.funcionario_button)
-        self.container.setLayout(menu_layout)
+        menuLayout = QVBoxLayout()
+        menuLayout.setContentsMargins(10, 200, 10, 300)  # Ajuste as margens inferior para mover o menu para cima
+        menuLayout.addWidget(self.clienteButton)
+        menuLayout.addWidget(self.funcionarioButton)
+        self.container.setLayout(menuLayout)
 
         self.stack = QStackedWidget(self)
         self.stack.setGeometry(250, 0, 503, 712)
 
-        self.cliente_widget = ClienteWidget()
-        self.funcionario_widget = FuncionarioWidget()
+        self.clienteWidget = ClienteWidget()
+        self.funcionarioWidget = FuncionarioWidget()
 
-        self.stack.addWidget(self.cliente_widget)
-        self.stack.addWidget(self.funcionario_widget)
+        self.stack.addWidget(self.clienteWidget)
+        self.stack.addWidget(self.funcionarioWidget)
 
         self.buttonSalvar = QPushButton("Salvar", self)
         self.buttonSalvar.setGeometry(390, 540, 200, 60)
@@ -162,7 +162,7 @@ class Cadastro(QDialog):
                                 QPushButton:hover { background-color: #ff6961; }
             """)
 
-        self.cliente_widget.txtNome.setFocus()
+        self.clienteWidget.txtNome.setFocus()
         self.buttonSalvar.clicked.connect(self.validateFields)
         self.buttonFechar.clicked.connect(self.closeWindow)
 
@@ -171,14 +171,14 @@ class Cadastro(QDialog):
         try:
             conn = ConnectDB()
             conn.conecta()
-            sql = f"select cpf from clientes where cpf='{self.cliente_widget.txtCpf.text()}'"
+            sql = f"select cpf from clientes where cpf='{self.clienteWidget.txtCpf.text()}'"
             conn.execute(sql)
             cpfExist = conn.fetchone()
             validaCpf = cpfExist['cpf']
         except Exception as e:
             print(e)
-        if self.cliente_widget.txtNome.text() == "" or self.cliente_widget.txtCpf.text() == "" or \
-                self.cliente_widget.txtEmail.text() == "" or self.cliente_widget.txtDataNasc.text() == "":
+        if self.clienteWidget.txtNome.text() == "" or self.clienteWidget.txtCpf.text() == "" or \
+                self.clienteWidget.txtEmail.text() == "" or self.clienteWidget.txtDataNasc.text() == "":
             info_box = QMessageBox(self)
             info_box.setWindowIcon(QtGui.QIcon("icon-information"))
             info_box.setIcon(QMessageBox.Information)
@@ -214,7 +214,7 @@ class Cadastro(QDialog):
             info_box.exec_()
             return
 
-        if not "@" in self.cliente_widget.txtEmail.text():
+        if not "@" in self.clienteWidget.txtEmail.text():
             info_box = QMessageBox(self)
             info_box.setWindowIcon(QtGui.QIcon("icon-information"))
             info_box.setIcon(QMessageBox.Information)
@@ -340,11 +340,11 @@ class Cadastro(QDialog):
                 }
             """)
             info_box.exec_()
-            self.cliente_widget.txtNome.setText("")
-            self.cliente_widget.txtCpf.setText("")
-            self.cliente_widget.txtEmail.setText("")
-            self.cliente_widget.txtDataNasc.setText("")
-            self.cliente_widget.txtNome.setFocus()
+            self.clienteWidget.txtNome.setText("")
+            self.clienteWidget.txtCpf.setText("")
+            self.clienteWidget.txtEmail.setText("")
+            self.clienteWidget.txtDataNasc.setText("")
+            self.clienteWidget.txtNome.setFocus()
         else:
             self.buttonSalvar.setEnabled(True)
             self.buttonFechar.setEnabled(True)
@@ -386,23 +386,24 @@ class Cadastro(QDialog):
         self.close()
 
     def showCliente(self):
-        self.stack.setCurrentWidget(self.cliente_widget)
+        self.stack.setCurrentWidget(self.clienteWidget)
 
     def showFuncionario(self):
-        self.stack.setCurrentWidget(self.funcionario_widget)
+        self.stack.setCurrentWidget(self.funcionarioWidget)
 
+    # Centraliza a janela no meio da tela
     def center_dialog(self):
         # Obtém o tamanho da tela
-        screen_geo = QApplication.desktop().availableGeometry()
+        screenGeo = QApplication.desktop().availableGeometry()
 
         # Obtém o retângulo da geometria do diálogo
-        dialog_geo = self.frameGeometry()
+        dialogGeo = self.frameGeometry()
 
         # Calcula a posição para centralizar o diálogo
-        center_point = screen_geo.center()
-        dialog_geo.moveCenter(center_point)
+        centerPoint = screenGeo.center()
+        dialogGeo.moveCenter(centerPoint)
 
-        self.move(dialog_geo.topLeft())  # Move o diálogo para a posição calculada
+        self.move(dialogGeo.topLeft())  # Move o diálogo para a posição calculada
 
 
 class WorkerThread(QThread):
@@ -413,7 +414,7 @@ class WorkerThread(QThread):
         self.window = parent
 
     def run(self):
-        retorno = self.parent().cliente_widget.insertData()
+        retorno = self.parent().clienteWidget.insertData()
         self.validationFinished.emit(retorno)
 
 

@@ -17,13 +17,13 @@ class MainWindow(QMainWindow):
 
         # ------------------------------------------------------
 
-        self.lblNavalha = QPushButton(self)
-        self.lblNavalha.setGeometry(160, 100, 150, 180)
-        self.lblNavalha.setStyleSheet("background-color: #282828; border-radius: 5px;")
-        self.lblTextNavalha = QLabel(self)
-        self.lblTextNavalha.setText("Serviços")
-        self.lblTextNavalha.setGeometry(195, 160, 100, 180)
-        self.lblTextNavalha.setStyleSheet("font-size: 30px; color: #fff; font-family: 'Great Vibes', cursive;")
+        self.lblServico = QPushButton(self)
+        self.lblServico.setGeometry(160, 100, 150, 180)
+        self.lblServico.setStyleSheet("background-color: #282828; border-radius: 5px;")
+        self.lblTextServico = QLabel(self)
+        self.lblTextServico.setText("Serviços")
+        self.lblTextServico.setGeometry(195, 160, 100, 180)
+        self.lblTextServico.setStyleSheet("font-size: 30px; color: #fff; font-family: 'Great Vibes', cursive;")
 
         self.imgNavalha = QLabel(self)
         self.imgNavalha.setGeometry(185, 120, 200, 180)
@@ -44,13 +44,13 @@ class MainWindow(QMainWindow):
         self.lblTextAgendamento.setGeometry(460, 160, 130, 180)
         self.lblTextAgendamento.setStyleSheet("font-size: 30px; color: #fff; font-family: 'Great Vibes', cursive;")
 
-        self.imgAgendamento = QLabel(self)
-        self.imgAgendamento.setGeometry(480, 120, 350, 100)
+        self.imgCadeira = QLabel(self)
+        self.imgCadeira.setGeometry(480, 120, 350, 100)
         self.pixmap = QPixmap('imgCadeira.png')
         self.pixmap = self.pixmap.scaled(100, 100)
-        self.imgAgendamento.setPixmap(self.pixmap)
-        self.imgAgendamento.resize(self.pixmap.width(), self.pixmap.height())
-        self.imgAgendamento.mousePressEvent = self.pressAgendamento
+        self.imgCadeira.setPixmap(self.pixmap)
+        self.imgCadeira.resize(self.pixmap.width(), self.pixmap.height())
+        self.imgCadeira.mousePressEvent = self.pressAgendamento
 
         # ------------------------------------------------------
 
