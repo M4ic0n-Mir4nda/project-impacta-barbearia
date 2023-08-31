@@ -4,11 +4,13 @@ from PyQt5.QtWidgets import QApplication, QDialog, QLabel, QPushButton, QVBoxLay
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import Qt, QThread, QEvent, QDateTime, QTimer
 from connDB import ConnectDB
+from message import messageDefault
 
 
 class AgendarWidget(QWidget):
     def __init__(self):
         super().__init__()
+        self.tempo = 0
         self.nome = None
         self.cpf = None
 
@@ -341,17 +343,21 @@ class AgendarWidget(QWidget):
 
     # Confirmação de agendamento de cliente e salva no BD
     def clickSchedule(self):
-        servico = self.servicoInput.text()
-        valor = self.valorInput.text()
         nomeCliente = self.nomeInput.text()
         cpfCliente = self.cpfInput.text()
+        servico = self.servicoInput.text()
+        valor = self.valorInput.text()
         horas = self.horaInput.text()
         minutos = self.minutoInput.text()
         data = f"{self.anoInput.text()}{self.mesInput.text()}{self.diaInput.text()}{horas}{minutos}00"
         tempo = self.tempo
         barberList = self.barbeiroInput.currentText().split("-")
         barberId = barberList[0]
+        print(barberId)
         conn = ConnectDB()
+        if nomeCliente == "":
+            messageDefault('Preencha todos os campos!')
+            return
         try:
             conn.conecta()
             sqlInsert = f"""

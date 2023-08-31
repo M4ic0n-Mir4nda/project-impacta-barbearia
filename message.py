@@ -1,4 +1,7 @@
-from PyQt5.QtWidgets import QMessageBox
+import sys
+from PyQt5.QtWidgets import QApplication, QDialog, QLabel, QPushButton, QVBoxLayout, QWidget, QStackedWidget, QLineEdit, \
+    QMessageBox, QHBoxLayout, QTreeWidget, QTreeWidgetItem, QScrollArea, QSizePolicy, QFrame, QComboBox
+from PyQt5 import QtCore, QtGui
 
 
 def messageDefault(message):
