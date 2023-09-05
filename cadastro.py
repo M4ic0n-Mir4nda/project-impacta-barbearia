@@ -5,6 +5,7 @@ from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import Qt, QRegExp, QThread, QEvent, pyqtSignal
 from PyQt5.QtGui import QPixmap, QFontDatabase, QRegExpValidator, QIcon
 from connDB import ConnectDB
+from message import messageDefault
 from datetime import datetime
 
 
@@ -179,111 +180,15 @@ class Cadastro(QDialog):
             print(e)
         if self.clienteWidget.txtNome.text() == "" or self.clienteWidget.txtCpf.text() == "" or \
                 self.clienteWidget.txtEmail.text() == "" or self.clienteWidget.txtDataNasc.text() == "":
-            info_box = QMessageBox(self)
-            info_box.setWindowIcon(QtGui.QIcon("icon-information"))
-            info_box.setIcon(QMessageBox.Information)
-            info_box.setWindowTitle("Informação")
-            info_box.setText("Preencha todos os campos!")
-            info_box.setStyleSheet("""
-                QMessageBox {
-                    background-color: #f4f4f4;
-                    border: 2px solid #3498db;
-                }
-                QMessageBox QLabel {
-                    color: #3498db;
-                    font-size: 20px;
-                }
-                QMessageBox QPushButton {
-                    background-color: #3498db;
-                    width: 70px;
-                    color: white;
-                    padding: 5px 20px;
-                    border-radius: 5px;
-                    margin: 0 auto
-                }
-                QMessageBox QPushButton:hover {
-                    background-color: #2980b9;
-                }
-                            /* Personalizar a barra de título */
-                QHeaderView {
-                    background-color: #3498db;
-                    color: white;
-                    padding: 5px;
-                }
-            """)
-            info_box.exec_()
+            messageDefault("Preencha todos os campos!")
             return
 
         if not "@" in self.clienteWidget.txtEmail.text():
-            info_box = QMessageBox(self)
-            info_box.setWindowIcon(QtGui.QIcon("icon-information"))
-            info_box.setIcon(QMessageBox.Information)
-            info_box.setWindowTitle("Informação")
-            info_box.setText("Endereço de email inválido.")
-            info_box.setStyleSheet("""
-                QMessageBox {
-                    background-color: #f4f4f4;
-                    border: 2px solid #3498db;
-                }
-                QMessageBox QLabel {
-                    color: #3498db;
-                    font-size: 20px;
-                }
-                QMessageBox QPushButton {
-                    background-color: #3498db;
-                    width: 70px;
-                    color: white;
-                    padding: 5px 20px;
-                    border-radius: 5px;
-                    margin: 0 auto
-                }
-                QMessageBox QPushButton:hover {
-                    background-color: #2980b9;
-                }
-                            /* Personalizar a barra de título */
-                QHeaderView {
-                    background-color: #3498db;
-                    color: white;
-                    padding: 5px;
-                }
-            """)
-            info_box.exec_()
+            messageDefault("Endereço de email inválido")
             return
 
         if validaCpf:
-            info_box = QMessageBox(self)
-            info_box.setWindowIcon(QtGui.QIcon("icon-information"))
-            info_box.setIcon(QMessageBox.Information)
-            info_box.setWindowTitle("Informação")
-            info_box.setText("CPF já existe")
-            info_box.setStyleSheet("""
-                QMessageBox {
-                    background-color: #f4f4f4;
-                    border: 2px solid #3498db;
-                }
-                QMessageBox QLabel {
-                    color: #3498db;
-                    font-size: 20px;
-                }
-                QMessageBox QPushButton {
-                    background-color: #3498db;
-                    width: 70px;
-                    color: white;
-                    padding: 5px 20px;
-                    border-radius: 5px;
-                    margin: 0 auto
-                }
-                QMessageBox QPushButton:hover {
-                    background-color: #2980b9;
-                }
-                            /* Personalizar a barra de título */
-                QHeaderView {
-                    background-color: #3498db;
-                    color: white;
-                    padding: 5px;
-                }
-            """)
-            info_box.exec_()
+            messageDefault("CPF já cadastrado")
             return
 
         self.saveData()
@@ -297,7 +202,6 @@ class Cadastro(QDialog):
             self.buttonSalvar.setDisabled(True)
             self.buttonFechar.setDisabled(True)
             worker = WorkerThread(self)
-            print(worker)
             worker.start()
             worker.validationFinished.connect(self.handleValidationResult)
         except Exception as e:
@@ -307,39 +211,7 @@ class Cadastro(QDialog):
         if validados:
             self.buttonSalvar.setEnabled(True)
             self.buttonFechar.setEnabled(True)
-            info_box = QMessageBox(self)
-            info_box.setWindowIcon(QtGui.QIcon("icon-information"))
-            info_box.setIcon(QMessageBox.Information)
-            info_box.setWindowTitle("Informação")
-            info_box.setText("Cadastro efetuado com sucesso")
-            info_box.setStyleSheet("""
-                QMessageBox {
-                    background-color: #f4f4f4;
-                    border: 2px solid #3498db;
-                }
-                QMessageBox QLabel {
-                    color: #3498db;
-                    font-size: 20px;
-                }
-                QMessageBox QPushButton {
-                    background-color: #3498db;
-                    width: 70px;
-                    color: white;
-                    padding: 5px 20px;
-                    border-radius: 5px;
-                    margin: 0 auto
-                }
-                QMessageBox QPushButton:hover {
-                    background-color: #2980b9;
-                }
-                            /* Personalizar a barra de título */
-                QHeaderView {
-                    background-color: #3498db;
-                    color: white;
-                    padding: 5px;
-                }
-            """)
-            info_box.exec_()
+            messageDefault("Cadastro efetuado com sucesso")
             self.clienteWidget.txtNome.setText("")
             self.clienteWidget.txtCpf.setText("")
             self.clienteWidget.txtEmail.setText("")
@@ -348,39 +220,7 @@ class Cadastro(QDialog):
         else:
             self.buttonSalvar.setEnabled(True)
             self.buttonFechar.setEnabled(True)
-            info_box = QMessageBox(self)
-            info_box.setWindowIcon(QtGui.QIcon("icon-critical"))
-            info_box.setIcon(QMessageBox.Information)
-            info_box.setWindowTitle("Erro")
-            info_box.setText("Erro: Verifique os campos e tente novamente.")
-            info_box.setStyleSheet("""
-                QMessageBox {
-                    background-color: #f4f4f4;
-                    border: 2px solid #3498db;
-                }
-                QMessageBox QLabel {
-                    color: #3498db;
-                    font-size: 20px;
-                }
-                QMessageBox QPushButton {
-                    background-color: #3498db;
-                    width: 70px;
-                    color: white;
-                    padding: 5px 20px;
-                    border-radius: 5px;
-                    margin: 0 auto
-                }
-                QMessageBox QPushButton:hover {
-                    background-color: #2980b9;
-                }
-                            /* Personalizar a barra de título */
-                QHeaderView {
-                    background-color: #3498db;
-                    color: white;
-                    padding: 5px;
-                }
-            """)
-            info_box.exec_()
+            messageDefault("Erro: Verifique os campos e tente novamente.")
 
     def closeWindow(self):
         self.close()

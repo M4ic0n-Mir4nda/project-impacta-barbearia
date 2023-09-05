@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QApplication, QDialog, QLabel, QPushButton, QVBoxLay
     QMessageBox, QHBoxLayout, QTreeWidget, QTreeWidgetItem, QScrollArea, QSizePolicy, QFrame, QComboBox
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import Qt, QThread, QEvent, QDateTime, QTimer
+from datetime import datetime, timedelta
 from connDB import ConnectDB
 from message import messageDefault
 
@@ -11,8 +12,11 @@ class AgendarWidget(QWidget):
     def __init__(self):
         super().__init__()
         self.tempo = 0
+        self.horas = 0
+        self.ultAgendamento = None
         self.nome = None
         self.cpf = None
+        self.idServico = 0
 
         self.layout = QVBoxLayout()
         self.layout.setContentsMargins(0, 20, 20, 20)
@@ -334,11 +338,12 @@ class AgendarWidget(QWidget):
     def onServiceSelected(self, servico):
         nome = servico["nome_servico"]
         valorFormatado = f"{servico['valor_servico']:.2f}".replace(".", ",")
+        self.idServico = servico["id"]
         self.tempo = servico["tempo_servico"]
-        horas = "m" if servico["horas"] == "minutos" else "h"
+        self.horas = "m" if servico["horas"] == "minutos" else "h"
         self.servicoInput.setText(str(nome))
         self.valorInput.setText(str(valorFormatado))
-        self.tempoInput.setText(f"{str(self.tempo)}{str(horas)}")
+        self.tempoInput.setText(f"{str(self.tempo)}{str(self.horas)}")
         self.services.close()
 
     # Confirmação de agendamento de cliente e salva no BD
@@ -353,56 +358,84 @@ class AgendarWidget(QWidget):
         tempo = self.tempo
         barberList = self.barbeiroInput.currentText().split("-")
         barberId = barberList[0]
-        print(barberId)
         conn = ConnectDB()
-        if nomeCliente == "":
+        conn.conecta()
+        '''if nomeCliente == "" or cpfCliente == "" or servico == "" or valor == "" or tempo == "" or barberId == "":
             messageDefault('Preencha todos os campos!')
-            return
+            return'''
         try:
-            conn.conecta()
+            dt = datetime.strptime(data, "%Y%m%d%H%M%S")
+            periodoAnterior = datetime.strptime(str(dt - timedelta(hours=1)), "%Y-%m-%d %H:%M:%S").strftime(
+                "%Y%m%d%H%M%S")
+            if self.horas == "m":
+                tDelta = dt + timedelta(minutes=self.tempo)
+                periodoApos = datetime.strptime(str(dt + timedelta(minutes=self.tempo)), "%Y-%m-%d %H:%M:%S").strftime("%Y%m%d%H%M%S")
+            else:
+                tDelta = dt + timedelta(hours=self.tempo)
+                periodoApos = datetime.strptime(str(dt + timedelta(hours=self.tempo)), "%Y-%m-%d %H:%M:%S").strftime("%Y%m%d%H%M%S")
+            sqlAgendamento = f"""
+                            SELECT * FROM agendamentos
+                            WHERE id_barbeiro = {barberId}
+                            AND (
+                                (data_hora >= {periodoAnterior} AND data_hora <= {periodoApos})) order by data_hora desc
+                                limit 1
+                            """
+            print(sqlAgendamento)
+            '''conn.execute(sqlAgendamento)
+            row = conn.fetchall()
+            if row:
+                horarioDisp = datetime.strptime(str(row[0]['data_hora'] + timedelta(minutes=self.tempo)),
+                                                "%Y-%m-%d %H:%M:%S").strftime("%d/%m/%Y %H:%M:%S")
+                self.ultAgendamento = horarioDisp
+                while True:
+                    if self.horas == "m":
+                        dtAnterior = tDelta + timedelta(minutes=self.tempo)
+                        dtApos = tDelta + timedelta(minutes=self.tempo + self.tempo)
+                        periodoAnterior = datetime.strptime(str(dtAnterior),
+                                                            "%Y-%m-%d %H:%M:%S").strftime("%Y%m%d%H%M%S")
+                        periodoApos = datetime.strptime(str(dtApos),
+                                                        "%Y-%m-%d %H:%M:%S").strftime("%Y%m%d%H%M%S")
+                        sql = f"""
+                            SELECT * FROM agendamentos
+                            WHERE id_barbeiro = {barberId}
+                            AND (
+                                (data_hora >= {periodoAnterior} AND data_hora <= {periodoApos})) order by data_hora desc
+                                limit 1
+                            """
+                        print(sql)
+                        conn.conecta()
+                        conn.execute(sql)
+                        validate = conn.fetchall()
+                        print(validate)
+                        if not validate:
+                            messageDefault(f"Esse horário já esta agendado, o proximo horario disponível é após {self.ultAgendamento}")
+                            return
+                        horarioDisp = datetime.strptime(str(validate[0]['data_hora'] + timedelta(minutes=self.tempo)),
+                                                        "%Y-%m-%d %H:%M:%S")
+                        self.ultAgendamento = horarioDisp
+                    else:
+                        dt = dt + timedelta(hours=self.tempo)
+                        dtFormatSelect = datetime.strptime(str(dt), "%Y-%m-%d %H:%M:%S").strftime("%Y%m%d%H%M%S")
+                        print(dtFormatSelect)
+                        sql = f"select * from agendamentos where data_hora={dtFormatSelect} and id_barbeiro={barberId}"
+                        conn.execute(sql)
+                        validate = conn.fetchone()
+                        if not validate:
+                            dtFormat = datetime.strptime(str(dtFormatSelect), "%Y%m%d%H%M%S").strftime("%d-%m-%Y %H:%M:%S")
+                            messageDefault(f"Esse horário já esta agendado, o proximo horario disponível é {dtFormat}")
+                            return'''
+            print('Ok')
             sqlInsert = f"""
                     insert into agendamentos
-                    (servico, valor, nome_cliente, cpf_cliente, data_hora, status, id_barbeiro)
+                    (id_servico, nome_cliente, cpf_cliente, data_hora, status, id_barbeiro)
                     values
-                    (%s, %s, %s, %s, %s, %s, %s)
-            """
-            val = (servico, valor, nomeCliente, cpfCliente, data, 0, barberId)
+                    (%s, %s, %s, %s, %s, %s)
+                    """
+            val = (self.idServico, nomeCliente, cpfCliente, data, 0, barberId)
             conn.execute(sqlInsert, val)
             conn.commit()
 
-            info_box = QMessageBox(self)
-            info_box.setWindowIcon(QtGui.QIcon("icon-information"))
-            info_box.setIcon(QMessageBox.Information)
-            info_box.setWindowTitle("Informação")
-            info_box.setText("Agendamento realizado com sucesso!")
-            info_box.setStyleSheet("""
-                QMessageBox {
-                    background-color: #f4f4f4;
-                    border: 2px solid #3498db;
-                }
-                QMessageBox QLabel {
-                    color: #3498db;
-                    font-size: 20px;
-                }
-                QMessageBox QPushButton {
-                    background-color: #3498db;
-                    width: 70px;
-                    color: white;
-                    padding: 5px 20px;
-                    border-radius: 5px;
-                    margin: 0 auto
-                }
-                QMessageBox QPushButton:hover {
-                    background-color: #2980b9;
-                }
-                            /* Personalizar a barra de título */
-                QHeaderView {
-                    background-color: #3498db;
-                    color: white;
-                    padding: 5px;
-                }
-            """)
-            info_box.exec_()
+            messageDefault("Agendamento realizado com sucesso!")
 
             self.nomeInput.setText("")
             self.cpfInput.setText("")
@@ -415,7 +448,7 @@ class AgendarWidget(QWidget):
             self.timer.start()
 
         except Exception as e:
-            print(e)
+            print(f"Erro: {e}")
 
         finally:
             conn.desconecta()
@@ -476,39 +509,7 @@ class AgendarWidget(QWidget):
                 self.mesInput.setText("01")
 
             elif yearText < dateCurrent:
-                info_box = QMessageBox(self)
-                info_box.setWindowIcon(QtGui.QIcon("icon-information"))
-                info_box.setIcon(QMessageBox.Information)
-                info_box.setWindowTitle("Informação")
-                info_box.setText("Ano inválido!")
-                info_box.setStyleSheet("""
-                    QMessageBox {
-                        background-color: #f4f4f4;
-                        border: 2px solid #3498db;
-                    }
-                    QMessageBox QLabel {
-                        color: #3498db;
-                        font-size: 20px;
-                    }
-                    QMessageBox QPushButton {
-                        background-color: #3498db;
-                        width: 70px;
-                        color: white;
-                        padding: 5px 20px;
-                        border-radius: 5px;
-                        margin: 0 auto
-                    }
-                    QMessageBox QPushButton:hover {
-                        background-color: #2980b9;
-                    }
-                                /* Personalizar a barra de título */
-                    QHeaderView {
-                        background-color: #3498db;
-                        color: white;
-                        padding: 5px;
-                    }
-                """)
-                info_box.exec_()
+                messageDefault("Ano inválido!")
                 self.anoInput.setText(str(dateCurrent))
 
         if not self.horaInput.text().isdigit() or not self.minutoInput.text().isdigit():
@@ -545,7 +546,7 @@ class AgendarWidget(QWidget):
     # Define o horario atual nas variaveis de texto da classe
     def hourCurrent(self):
         try:
-            self.timer.start(10000)
+            # self.timer.start(10000)
             time = QDateTime.currentDateTime()
             hourCurrent = time.toString("hh")
             minuteCurrent = time.toString("mm")
@@ -575,39 +576,7 @@ class AgendarWidget(QWidget):
                 nomeClient = row['nome']
                 self.nomeInput.setText(nomeClient)
             else:
-                info_box = QMessageBox(self)
-                info_box.setWindowIcon(QtGui.QIcon("icon-information"))
-                info_box.setIcon(QMessageBox.Information)
-                info_box.setWindowTitle("Informação")
-                info_box.setText("Não existe cadastro com esse CPF!")
-                info_box.setStyleSheet("""
-                    QMessageBox {
-                        background-color: #f4f4f4;
-                        border: 2px solid #3498db;
-                    }
-                    QMessageBox QLabel {
-                        color: #3498db;
-                        font-size: 20px;
-                    }
-                    QMessageBox QPushButton {
-                        background-color: #3498db;
-                        width: 70px;
-                        color: white;
-                        padding: 5px 20px;
-                        border-radius: 5px;
-                        margin: 0 auto
-                    }
-                    QMessageBox QPushButton:hover {
-                        background-color: #2980b9;
-                    }
-                                /* Personalizar a barra de título */
-                    QHeaderView {
-                        background-color: #3498db;
-                        color: white;
-                        padding: 5px;
-                    }
-                """)
-                info_box.exec_()
+                messageDefault("Cadastro não encontrado")
                 self.nomeInput.setText("")
         except Exception as e:
             exc_type, exc_value = sys.exc_info()
@@ -622,39 +591,7 @@ class AgendarWidget(QWidget):
             self.treeWidget.installEventFilter(self)
             if name.text() == "" or name.text().isdigit():
                 self.treeWidget.clear()
-                info_box = QMessageBox(self)
-                info_box.setWindowIcon(QtGui.QIcon("icon-information"))
-                info_box.setIcon(QMessageBox.Information)
-                info_box.setWindowTitle("Informação")
-                info_box.setText("Nenhum registo encontrado")
-                info_box.setStyleSheet("""
-                    QMessageBox {
-                        background-color: #f4f4f4;
-                        border: 2px solid #3498db;
-                    }
-                    QMessageBox QLabel {
-                        color: #3498db;
-                        font-size: 20px;
-                    }
-                    QMessageBox QPushButton {
-                        background-color: #3498db;
-                        width: 70px;
-                        color: white;
-                        padding: 5px 20px;
-                        border-radius: 5px;
-                        margin: 0 auto
-                    }
-                    QMessageBox QPushButton:hover {
-                        background-color: #2980b9;
-                    }
-                                /* Personalizar a barra de título */
-                    QHeaderView {
-                        background-color: #3498db;
-                        color: white;
-                        padding: 5px;
-                    }
-                """)
-                info_box.exec_()
+                messageDefault("Nenhum registo encontrado")
             else:
                 conn = ConnectDB()
                 conn.conecta()
