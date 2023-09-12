@@ -354,84 +354,33 @@ class AgendarWidget(QWidget):
         valor = self.valorInput.text()
         horas = self.horaInput.text()
         minutos = self.minutoInput.text()
-        data = f"{self.anoInput.text()}{self.mesInput.text()}{self.diaInput.text()}{horas}{minutos}00"
-        tempo = self.tempo
+        dt = datetime.strptime(f"{self.anoInput.text()}{self.mesInput.text()}{self.diaInput.text()}{horas}{minutos}00", "%Y%m%d%H%M%S")
+
+        previsao = datetime.strptime(str(dt + timedelta(minutes=self.tempo)), "%Y-%m-%d %H:%M:%S").strftime("%Y%m%d%H%M%S") \
+            if self.horas == "m" else datetime.strptime(str(dt + timedelta(hours=self.tempo)), "%Y-%m-%d %H:%M:%S").strftime("%Y%m%d%H%M%S")
+
+        data = datetime.strptime(str(dt), "%Y-%m-%d %H:%M:%S").strftime("%Y%m%d%H%M%S")
         barberList = self.barbeiroInput.currentText().split("-")
         barberId = barberList[0]
         conn = ConnectDB()
         conn.conecta()
-        '''if nomeCliente == "" or cpfCliente == "" or servico == "" or valor == "" or tempo == "" or barberId == "":
+        if nomeCliente == "" or cpfCliente == "..-" or servico == "" or valor == "" or self.tempo == "" or barberId == "":
             messageDefault('Preencha todos os campos!')
-            return'''
+            return
         try:
-            dt = datetime.strptime(data, "%Y%m%d%H%M%S")
-            periodoAnterior = datetime.strptime(str(dt - timedelta(hours=1)), "%Y-%m-%d %H:%M:%S").strftime(
-                "%Y%m%d%H%M%S")
-            if self.horas == "m":
-                tDelta = dt + timedelta(minutes=self.tempo)
-                periodoApos = datetime.strptime(str(dt + timedelta(minutes=self.tempo)), "%Y-%m-%d %H:%M:%S").strftime("%Y%m%d%H%M%S")
-            else:
-                tDelta = dt + timedelta(hours=self.tempo)
-                periodoApos = datetime.strptime(str(dt + timedelta(hours=self.tempo)), "%Y-%m-%d %H:%M:%S").strftime("%Y%m%d%H%M%S")
-            sqlAgendamento = f"""
-                            SELECT * FROM agendamentos
-                            WHERE id_barbeiro = {barberId}
-                            AND (
-                                (data_hora >= {periodoAnterior} AND data_hora <= {periodoApos})) order by data_hora desc
-                                limit 1
-                            """
-            print(sqlAgendamento)
-            '''conn.execute(sqlAgendamento)
-            row = conn.fetchall()
-            if row:
-                horarioDisp = datetime.strptime(str(row[0]['data_hora'] + timedelta(minutes=self.tempo)),
-                                                "%Y-%m-%d %H:%M:%S").strftime("%d/%m/%Y %H:%M:%S")
-                self.ultAgendamento = horarioDisp
-                while True:
-                    if self.horas == "m":
-                        dtAnterior = tDelta + timedelta(minutes=self.tempo)
-                        dtApos = tDelta + timedelta(minutes=self.tempo + self.tempo)
-                        periodoAnterior = datetime.strptime(str(dtAnterior),
-                                                            "%Y-%m-%d %H:%M:%S").strftime("%Y%m%d%H%M%S")
-                        periodoApos = datetime.strptime(str(dtApos),
-                                                        "%Y-%m-%d %H:%M:%S").strftime("%Y%m%d%H%M%S")
-                        sql = f"""
-                            SELECT * FROM agendamentos
-                            WHERE id_barbeiro = {barberId}
-                            AND (
-                                (data_hora >= {periodoAnterior} AND data_hora <= {periodoApos})) order by data_hora desc
-                                limit 1
-                            """
-                        print(sql)
-                        conn.conecta()
-                        conn.execute(sql)
-                        validate = conn.fetchall()
-                        print(validate)
-                        if not validate:
-                            messageDefault(f"Esse horário já esta agendado, o proximo horario disponível é após {self.ultAgendamento}")
-                            return
-                        horarioDisp = datetime.strptime(str(validate[0]['data_hora'] + timedelta(minutes=self.tempo)),
-                                                        "%Y-%m-%d %H:%M:%S")
-                        self.ultAgendamento = horarioDisp
-                    else:
-                        dt = dt + timedelta(hours=self.tempo)
-                        dtFormatSelect = datetime.strptime(str(dt), "%Y-%m-%d %H:%M:%S").strftime("%Y%m%d%H%M%S")
-                        print(dtFormatSelect)
-                        sql = f"select * from agendamentos where data_hora={dtFormatSelect} and id_barbeiro={barberId}"
-                        conn.execute(sql)
-                        validate = conn.fetchone()
-                        if not validate:
-                            dtFormat = datetime.strptime(str(dtFormatSelect), "%Y%m%d%H%M%S").strftime("%d-%m-%Y %H:%M:%S")
-                            messageDefault(f"Esse horário já esta agendado, o proximo horario disponível é {dtFormat}")
-                            return'''
-            print('Ok')
+            sqlVerificarAgendamento = f"select * from agendamentos where data_hora={data} and id_barbeiro={barberId}"
+            conn.execute(sqlVerificarAgendamento)
+            agendamento = conn.fetchone()
+            if agendamento:
+                messageDefault("Este horário já esta agendado, verifique outro horário ou barbeiro")
+                return
             sqlInsert = f"""
                     insert into agendamentos
-                    (id_servico, nome_cliente, cpf_cliente, data_hora, status, id_barbeiro)
+                    (id_servico, nome_cliente, cpf_cliente, data_hora, previsao, status, id_barbeiro)
                     values
-                    (%s, %s, %s, %s, %s, %s)
+                    (%s, %s, %s, %s, %s, %s, %s)
                     """
-            val = (self.idServico, nomeCliente, cpfCliente, data, 0, barberId)
+            val = (self.idServico, nomeCliente, cpfCliente, data, previsao, 0, barberId)
             conn.execute(sqlInsert, val)
             conn.commit()
 

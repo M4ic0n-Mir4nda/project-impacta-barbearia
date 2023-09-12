@@ -1,6 +1,7 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QLabel, QMainWindow, QPushButton
-from PyQt5.QtGui import QPixmap, QFontDatabase
+from PyQt5.QtGui import QPixmap, QFontDatabase, QIcon
+from PyQt5 import QtGui
 from PyQt5.QtCore import Qt
 from cadastro import Cadastro
 from agendamento import Agendamento
@@ -12,6 +13,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Barber Shop")
         self.resize(750, 650)
         self.setWindowFlags(self.windowFlags() & ~Qt.WindowMaximizeButtonHint)
+        self.setWindowIcon(QtGui.QIcon("iconBarber.ico"))
         self.setStyleSheet("QMainWindow {background: url(wallpaper.jpg)}")
         QFontDatabase.addApplicationFont("GreatVibes-Regular.ttf")
 
