@@ -1,11 +1,24 @@
 import sys
+import locale
 from PyQt5.QtWidgets import QApplication, QDialog, QLabel, QPushButton, QVBoxLayout, QWidget, QStackedWidget, QLineEdit, \
-    QMessageBox, QHBoxLayout, QTreeWidget, QTreeWidgetItem, QScrollArea, QSizePolicy, QFrame, QComboBox
+    QMessageBox, QHBoxLayout, QTreeWidget, QTreeWidgetItem, QScrollArea, QSizePolicy, QFrame, QComboBox, QDateEdit, QCalendarWidget
 from PyQt5 import QtCore, QtGui
-from PyQt5.QtCore import Qt, QThread, QEvent, QDateTime, QTimer
+from PyQt5.QtCore import Qt, QThread, QEvent, QDateTime, QTimer, QDate
 from datetime import datetime, timedelta
 from connDB import ConnectDB
 from message import messageDefault
+
+stylesheetTreeWidgts = '''
+    QTreeWidget::Item{
+        color: black;
+        border-bottom: 1px solid #d2d2d2;
+        border-top: 1px solid #d2d2d2;
+        border-right: 1px solid #d2d2d2;
+    }
+    QTreeWidget::Item:selected {
+        background-color: #94c9e4;
+    }
+'''
 
 
 class AgendarWidget(QWidget):
@@ -21,12 +34,11 @@ class AgendarWidget(QWidget):
         self.layout = QVBoxLayout()
         self.layout.setContentsMargins(0, 20, 20, 20)
         self.layout.setSpacing(10)  # Adicionando espaçamento entre os widgets
-        self.vertical_layout = QVBoxLayout()
 
         self.nomeLabel = QLabel("Nome:")
         self.nomeInput = QLineEdit()
         self.nomeInput.installEventFilter(self)
-        # self.nomeInput.textChanged.connect(self.textChangedUpperCase)
+        self.nomeInput.textChanged.connect(self.textChangedUpperCase)
 
         # ----------------------------------------------------------------
 
@@ -627,10 +639,143 @@ class AgendamentosWidget(QWidget):
     def __init__(self):
         super().__init__()
 
-        layout = QVBoxLayout()
-        self.label = QLabel("Tela de Cadastro de Agendamentos")
-        layout.addWidget(self.label)
-        self.setLayout(layout)
+        self.title = QLabel(self)
+        self.title.setText("Agendamentos")
+        self.title.setStyleSheet("font-size: 25px; font-weight: bold; font-family: Arial, sans-serif")
+        self.title.setGeometry(0, 30, 200, 50)
+
+        # ------------------------------------------------------------
+
+        self.closeButton = QPushButton(self)
+        self.closeButton.setText("X")
+        self.closeButton.setStyleSheet("""
+            QPushButton {
+                background-color: #e74c3c;
+                color: white;
+                font-weight: bold;
+                font-size: 12px;
+                border: none;
+            }
+            QPushButton:hover {
+                background-color: #c0392b;
+            }
+        """)
+        self.closeButton.setGeometry(460, 0, 40, 25)
+
+        # ------------------------------------------------------------
+
+        self.dataEdit = QDateEdit(self)
+        self.dataEdit.setCalendarPopup(True)
+        self.dataEdit.setStyleSheet("""
+                QDateEdit {
+                    border: 2px solid #0078d4; /* Cor da borda */
+                    border-radius: 5px; /* Borda arredondada */
+                    padding: 3px;
+                }
+            """)
+        self.dataEdit.setDisplayFormat("dd/MM/yyyy")
+        self.dataEdit.setGeometry(0, 100, 100, 30)
+        self.setToday()
+
+        self.nomeInput = QLineEdit(self)
+        self.nomeInput.setGeometry(105, 98, 270, 35)
+
+        self.searchDataButton = QPushButton(self)
+        self.searchDataButton.setText("Buscar")
+        self.searchDataButton.setStyleSheet("""
+            QPushButton {
+                background-color: #3498db;
+                color: white;
+                font-size: 16px;
+                border-radius: 5px;
+            }
+            QPushButton:hover {
+                background-color: #2980b9;
+            }
+        """)
+        self.searchDataButton.setGeometry(380, 100, 100, 30)
+
+        # ------------------------------------------------------------
+
+        self.treeWidgetAgendamentos = QTreeWidget(self)
+        self.treeWidgetAgendamentos.setGeometry(0, 150, 480, 540)
+        self.treeWidgetAgendamentos.setColumnCount(6)
+        self.treeWidgetAgendamentos.setHeaderLabels(["Cliente", "Serviço", "Valor", "Barbeiro", "Horário", "Previsão de Término", ""])
+        self.treeWidgetAgendamentos.setColumnWidth(0, 250)
+        self.treeWidgetAgendamentos.setColumnWidth(1, 160)
+        self.treeWidgetAgendamentos.setColumnWidth(2, 70)
+        self.treeWidgetAgendamentos.setColumnWidth(3, 180)
+        self.treeWidgetAgendamentos.setColumnWidth(4, 145)
+        self.treeWidgetAgendamentos.setColumnWidth(5, 145)
+        self.treeWidgetAgendamentos.header().setDefaultAlignment(Qt.AlignCenter | Qt.AlignVCenter)
+        self.treeWidgetAgendamentos.header().setStyleSheet("""
+                                font: bold 12px; 
+                                text-align: center; 
+                                font-family: Helvetica; 
+                                border: 1px solid #d3d3d3;
+                                background-color: #f1f1f1;
+        """)
+        self.treeWidgetAgendamentos.setStyleSheet(stylesheetTreeWidgts)
+        self.searchAgendamentos()
+
+    # Define a data atual
+    def setToday(self):
+        self.today = QDate().currentDate().toString("dd/MM/yyyy")
+        formatToday = QDate().fromString(self.today, "dd/MM/yyyy")
+        self.dataEdit.setDate(formatToday)
+
+    def searchAgendamentos(self):
+        try:
+            conn = ConnectDB()
+            conn.conecta()
+            dateCurrent = QDateTime.currentDateTime().toString("yyyyMMdd")
+            sql = f"""
+                select a.id_agendamento, a.nome_cliente, s.nome_servico, s.valor_servico, b.nome, a.data_hora, a.previsao 
+                from agendamentos a
+                inner join servicos s on a.id_servico=s.id
+                inner join barbeiro b on a.id_barbeiro=b.id_barbeiro
+                where data_hora between 20230905 and {dateCurrent}235959
+                order by data_hora
+            """
+            conn.execute(sql)
+            clients = conn.fetchall()
+            if clients:
+                clientCount = 0
+                self.treeWidgetAgendamentos.clear()
+                image_widget = QWidget()
+                image_layout = QHBoxLayout()
+                for client in clients:
+                    clientCount += 1
+                    agendamento = QTreeWidgetItem(self.treeWidgetAgendamentos)
+                    nomeClient = str(client['nome_cliente'])
+                    servico = str(client['nome_servico'])
+                    valor = client['valor_servico']
+                    nomeBarbeiro = str(client['nome'])
+                    data = datetime.strptime(str(client['data_hora']), "%Y-%m-%d %H:%M:%S").strftime("%d-%m-%Y %H:%M:%S") if client['data_hora'] else ""
+                    previsao = datetime.strptime(str(client['previsao']), "%Y-%m-%d %H:%M:%S").strftime("%d-%m-%Y %H:%M:%S") if client['previsao'] else ""
+                    agendamento.setText(0, nomeClient)
+                    agendamento.setText(1, servico)
+                    agendamento.setText(2, f"R$ {float(valor):.2f}")
+                    agendamento.setText(3, nomeBarbeiro)
+                    agendamento.setText(4, data)
+                    agendamento.setText(5, previsao)
+
+                    '''pixmap1 = QPixmap('icon-critical.ico')
+                    pixmap1 = pixmap1.scaled(30, 30)
+                    label1 = QLabel()
+                    label1.setPixmap(pixmap1)
+                    # label1.mousePressEvent = lambda event, label="imagem1": self.on_image_clicked(label)
+                    image_layout.addWidget(label1)
+
+                    image_widget.setLayout(image_layout)
+                    image_layout.setAlignment(Qt.AlignCenter)
+                    self.treeWidget.setItemWidget(item1, 7, image_widget)'''
+
+        except Exception as e:
+            print(e)
+
+    def closeWindow(self):
+        self.close()
 
 
 class WorkerTreadTime(QThread):
@@ -703,6 +848,7 @@ class Agendamento(QDialog):
         self.agendarWidget = AgendarWidget()
         self.agendamentosWidget = AgendamentosWidget()
         self.agendarWidget.cancelarButton.clicked.connect(self.closeWindow)
+        self.agendamentosWidget.closeButton.clicked.connect(self.closeWindow)
 
         self.stack.addWidget(self.agendarWidget)
         self.stack.addWidget(self.agendamentosWidget)
@@ -732,6 +878,7 @@ class Agendamento(QDialog):
         self.stack.setCurrentWidget(self.agendarWidget)
 
     def showAgendamentos(self):
+        self.agendamentosWidget.searchAgendamentos()
         self.stack.setCurrentWidget(self.agendamentosWidget)
 
 
