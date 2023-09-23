@@ -1,9 +1,11 @@
 import sys
 import locale
 from PyQt5.QtWidgets import QApplication, QDialog, QLabel, QPushButton, QVBoxLayout, QWidget, QStackedWidget, QLineEdit, \
-    QMessageBox, QHBoxLayout, QTreeWidget, QTreeWidgetItem, QScrollArea, QSizePolicy, QFrame, QComboBox, QDateEdit, QCalendarWidget
+    QMessageBox, QHBoxLayout, QTreeWidget, QTreeWidgetItem, QScrollArea, QSizePolicy, QFrame, QComboBox, QDateEdit, \
+    QCalendarWidget, QDateTimeEdit
 from PyQt5 import QtCore, QtGui
-from PyQt5.QtCore import Qt, QThread, QEvent, QDateTime, QTimer, QDate
+from PyQt5.QtCore import Qt, QThread, QEvent, QDateTime, QTimer, QDate, QTime
+from PyQt5.QtGui import QPixmap
 from datetime import datetime, timedelta
 from connDB import ConnectDB
 from message import messageDefault
@@ -700,13 +702,15 @@ class AgendamentosWidget(QWidget):
         self.treeWidgetAgendamentos = QTreeWidget(self)
         self.treeWidgetAgendamentos.setGeometry(0, 150, 480, 540)
         self.treeWidgetAgendamentos.setColumnCount(6)
-        self.treeWidgetAgendamentos.setHeaderLabels(["Cliente", "Serviço", "Valor", "Barbeiro", "Horário", "Previsão de Término", ""])
+        self.treeWidgetAgendamentos.setHeaderLabels(["Cliente", "Serviço", "Valor", "Barbeiro", "Horário", "Previsão de Término", "", ""])
         self.treeWidgetAgendamentos.setColumnWidth(0, 250)
         self.treeWidgetAgendamentos.setColumnWidth(1, 160)
         self.treeWidgetAgendamentos.setColumnWidth(2, 70)
         self.treeWidgetAgendamentos.setColumnWidth(3, 180)
         self.treeWidgetAgendamentos.setColumnWidth(4, 145)
         self.treeWidgetAgendamentos.setColumnWidth(5, 145)
+        self.treeWidgetAgendamentos.setColumnWidth(6, 50)
+        self.treeWidgetAgendamentos.setColumnWidth(7, 50)
         self.treeWidgetAgendamentos.header().setDefaultAlignment(Qt.AlignCenter | Qt.AlignVCenter)
         self.treeWidgetAgendamentos.header().setStyleSheet("""
                                 font: bold 12px; 
@@ -720,8 +724,8 @@ class AgendamentosWidget(QWidget):
 
     # Define a data atual
     def setToday(self):
-        self.today = QDate().currentDate().toString("dd/MM/yyyy")
-        formatToday = QDate().fromString(self.today, "dd/MM/yyyy")
+        today = QDate().currentDate().toString("dd/MM/yyyy")
+        formatToday = QDate().fromString(today, "dd/MM/yyyy")
         self.dataEdit.setDate(formatToday)
 
     def searchAgendamentos(self):
@@ -744,9 +748,11 @@ class AgendamentosWidget(QWidget):
                 self.treeWidgetAgendamentos.clear()
                 image_widget = QWidget()
                 image_layout = QHBoxLayout()
+                image_layout.setAlignment(Qt.AlignCenter)
                 for client in clients:
                     clientCount += 1
                     agendamento = QTreeWidgetItem(self.treeWidgetAgendamentos)
+                    id = str(client['id_agendamento'])
                     nomeClient = str(client['nome_cliente'])
                     servico = str(client['nome_servico'])
                     valor = client['valor_servico']
@@ -760,16 +766,118 @@ class AgendamentosWidget(QWidget):
                     agendamento.setText(4, data)
                     agendamento.setText(5, previsao)
 
-                    '''pixmap1 = QPixmap('icon-critical.ico')
-                    pixmap1 = pixmap1.scaled(30, 30)
-                    label1 = QLabel()
-                    label1.setPixmap(pixmap1)
-                    # label1.mousePressEvent = lambda event, label="imagem1": self.on_image_clicked(label)
-                    image_layout.addWidget(label1)
+                    pixmap1 = QPixmap('icon-critical.ico')
+                    pixmap1 = pixmap1.scaled(26, 26)
+                    lblImageDelete = QLabel()
+                    lblImageDelete.setPixmap(pixmap1)
+                    lblImageDelete.setAlignment(Qt.AlignCenter)
 
-                    image_widget.setLayout(image_layout)
-                    image_layout.setAlignment(Qt.AlignCenter)
-                    self.treeWidget.setItemWidget(item1, 7, image_widget)'''
+                    pixmap2 = QPixmap('icon-edit.ico')
+                    pixmap2 = pixmap2.scaled(25, 25)
+                    lblImageUpdate = QLabel()
+                    lblImageUpdate.setPixmap(pixmap2)
+                    lblImageUpdate.setAlignment(Qt.AlignCenter)
+
+                    lblImageDelete.mousePressEvent = lambda event, label=id: self.deleteAgendamento(label)
+                    lblImageUpdate.mousePressEvent = lambda event, label=id: self.updateAgendamento(label)
+
+                    self.treeWidgetAgendamentos.setItemWidget(agendamento, 6, lblImageDelete)
+                    self.treeWidgetAgendamentos.setItemWidget(agendamento, 7, lblImageUpdate)
+
+        except Exception as e:
+            print(e)
+
+    def deleteAgendamento(self, id):
+        conn = ConnectDB()
+        conn.conecta()
+        try:
+            sqlDelete = f"delete from agendamentos where id_agendamento={id}"
+            conn.execute(sqlDelete)
+            conn.commit()
+            self.searchAgendamentos()
+        except Exception as e:
+            print(e)
+
+    def updateAgendamento(self, id):
+        try:
+            self.showDialog = QDialog(self)
+            self.showDialog.setFixedSize(420, 300)
+            self.showDialog.setWindowTitle("Informações de Agendamento")
+
+            layout = QVBoxLayout(self.showDialog)
+            layoutServico = QHBoxLayout()
+            layoutTempoeValor = QHBoxLayout()
+            layoutHorario = QHBoxLayout()
+
+            # Create labels and line edits
+            lblNome = QLabel("Nome:")
+            nomeLineEdit = QLineEdit()
+
+            lblServico = QLabel("Serviço:")
+            servicoLineEdit = QLineEdit()
+
+            lblTempo = QLabel("Tempo:")
+            tempoLineEdit = QLineEdit()
+
+            lblValor = QLabel("Valor:")
+            valorLineEdit = QLineEdit()
+
+            lblBarbeiro = QLabel("Barbeiro:")
+            barbeiroLineEdit = QComboBox()
+
+            try:
+                conn = ConnectDB()
+                conn.conecta()
+                sqlBarbeiros = "select id_barbeiro, nome from barbeiro"
+                conn.execute(sqlBarbeiros)
+                barbeiros = conn.fetchall()
+                barbeiroLineEdit.addItem("")
+                for barbeiro in barbeiros:
+                    barbeiroLineEdit.addItem(f"{barbeiro['id_barbeiro']} - {barbeiro['nome']}")
+            except Exception as e:
+                print(e)
+                pass
+
+            servicoButton = QPushButton("Selecionar")
+            servicoButton.resize(80, 23)
+            servicoButton.setStyleSheet("""
+                            QPushButton {
+                                border-radius: 3px; 
+                                background-color: #3498db; 
+                                color: #fff; 
+                                padding: 6px
+                            }
+                            QPushButton:hover {
+                                background-color: #2980b9;
+                            }
+            """)
+
+            layoutServico.addWidget(lblServico)
+            layoutServico.addWidget(servicoLineEdit)
+            layoutServico.addWidget(servicoButton)
+
+            layoutTempoeValor.addWidget(lblTempo)
+            layoutTempoeValor.addWidget(tempoLineEdit)
+            layoutTempoeValor.addWidget(lblValor)
+            layoutTempoeValor.addWidget(valorLineEdit)
+
+            lblHorario = QLabel("Horário:")
+            horarioDateTimeEdit = QDateTimeEdit()
+            horarioDateTimeEdit.setDisplayFormat("dd/MM/yyyy HH:mm")
+            horarioDateTimeEdit.setCalendarPopup(True)
+
+            layoutHorario.addWidget(lblHorario)
+            layoutHorario.addWidget(horarioDateTimeEdit)
+
+            layout.addWidget(lblNome)
+            layout.addWidget(nomeLineEdit)
+            layout.addWidget(lblBarbeiro)
+            layout.addWidget(barbeiroLineEdit)
+            layout.addLayout(layoutServico)
+            layout.addLayout(layoutTempoeValor)
+            layout.addLayout(layoutHorario)
+
+            self.showDialog.exec_()
 
         except Exception as e:
             print(e)
@@ -878,7 +986,7 @@ class Agendamento(QDialog):
         self.stack.setCurrentWidget(self.agendarWidget)
 
     def showAgendamentos(self):
-        self.agendamentosWidget.searchAgendamentos()
+        # self.agendamentosWidget.searchAgendamentos()
         self.stack.setCurrentWidget(self.agendamentosWidget)
 
 

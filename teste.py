@@ -25,15 +25,15 @@ class MyWindow(QMainWindow):
 
         # Carregar a primeira imagem (substitua 'path_imagem1.png' pelo caminho da sua primeira imagem)
         pixmap1 = QPixmap('icon-critical.ico')
-        pixmap1 = pixmap1.scaled(30, 30)
+        pixmap1 = pixmap1.scaled(20, 20)
         label1 = QLabel()
         label1.setPixmap(pixmap1)
         label1.mousePressEvent = lambda event, label="imagem1": self.on_image_clicked(label)
         image_layout.addWidget(label1)
 
         # Carregar a segunda imagem (substitua 'path_imagem2.png' pelo caminho da sua segunda imagem)
-        pixmap2 = QPixmap('icon-information.ico')
-        pixmap2 = pixmap2.scaled(26, 26)
+        pixmap2 = QPixmap('icon-edit.ico')
+        pixmap2 = pixmap2.scaled(18, 18)
         label2 = QLabel()
         label2.setPixmap(pixmap2)
         label2.mousePressEvent = lambda event, label="imagem2": self.on_image_clicked(label)
