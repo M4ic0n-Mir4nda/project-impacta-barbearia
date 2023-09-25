@@ -734,7 +734,7 @@ class AgendamentosWidget(QWidget):
             conn.conecta()
             dateCurrent = QDateTime.currentDateTime().toString("yyyyMMdd")
             sql = f"""
-                select a.id_agendamento, a.nome_cliente, s.nome_servico, s.valor_servico, b.nome, a.data_hora, a.previsao 
+                select a.id_agendamento, a.nome_cliente, s.nome_servico, s.valor_servico, b.nome, a.data_hora, a.previsao
                 from agendamentos a
                 inner join servicos s on a.id_servico=s.id
                 inner join barbeiro b on a.id_barbeiro=b.id_barbeiro
@@ -799,7 +799,42 @@ class AgendamentosWidget(QWidget):
             print(e)
 
     def updateAgendamento(self, id):
+        print(id)
         try:
+            conn = ConnectDB()
+            conn.conecta()
+
+            # -----------------------------------------------------
+
+            sqlAgendamentos = f"""
+                    select a.id_agendamento, a.nome_cliente, s.nome_servico, s.valor_servico, s.tempo_servico, 
+                    s.horas, b.nome, b.id_barbeiro, a.data_hora, a.previsao
+                    from agendamentos a
+                    inner join servicos s on a.id_servico=s.id
+                    inner join barbeiro b on a.id_barbeiro=b.id_barbeiro
+                    where id_agendamento={id}
+            """
+            conn.execute(sqlAgendamentos)
+            agendamentos = conn.fetchall()
+            nomeClient = agendamentos[0]["nome_cliente"]
+            servico = agendamentos[0]["nome_servico"]
+            valor = agendamentos[0]["valor_servico"]
+            tempo = agendamentos[0]["tempo_servico"]
+            horas = "m" if agendamentos[0]["horas"] == "minutos" else "h"
+            idBarbeiro = agendamentos[0]["id_barbeiro"]
+            nomeBarbeiro = agendamentos[0]["nome"]
+            dataDoServico = agendamentos[0]["data_hora"]
+            dataFormatada = datetime.strptime(str(dataDoServico), "%Y-%m-%d %H:%M:%S").strftime("%d-%m-%Y %H:%M")
+            qDate = QDateTime.fromString(dataFormatada, "dd-MM-yyyy HH:mm")
+
+            # -----------------------------------------------------
+
+            sqlBarbeiros = "select id_barbeiro, nome from barbeiro"
+            conn.execute(sqlBarbeiros)
+            barbeiros = conn.fetchall()
+
+            # -----------------------------------------------------
+
             self.showDialog = QDialog(self)
             self.showDialog.setFixedSize(420, 300)
             self.showDialog.setWindowTitle("Informações de Agendamento")
@@ -812,35 +847,50 @@ class AgendamentosWidget(QWidget):
             # Create labels and line edits
             lblNome = QLabel("Nome:")
             nomeLineEdit = QLineEdit()
+            nomeLineEdit.setText(nomeClient)
+            nomeLineEdit.setDisabled(True)
 
             lblServico = QLabel("Serviço:")
             servicoLineEdit = QLineEdit()
+            servicoLineEdit.setText(servico)
+            servicoLineEdit.setDisabled(True)
 
             lblTempo = QLabel("Tempo:")
             tempoLineEdit = QLineEdit()
+            tempoLineEdit.setText(f"{tempo}{horas}")
+            tempoLineEdit.setDisabled(True)
 
             lblValor = QLabel("Valor:")
             valorLineEdit = QLineEdit()
+            valorLineEdit.setText(f"{float(valor):.2f}")
+            valorLineEdit.setDisabled(True)
 
             lblBarbeiro = QLabel("Barbeiro:")
             barbeiroLineEdit = QComboBox()
 
-            try:
-                conn = ConnectDB()
-                conn.conecta()
-                sqlBarbeiros = "select id_barbeiro, nome from barbeiro"
-                conn.execute(sqlBarbeiros)
-                barbeiros = conn.fetchall()
-                barbeiroLineEdit.addItem("")
-                for barbeiro in barbeiros:
-                    barbeiroLineEdit.addItem(f"{barbeiro['id_barbeiro']} - {barbeiro['nome']}")
-            except Exception as e:
-                print(e)
-                pass
+            barbeiroLineEdit.addItem(f"{idBarbeiro} - {nomeBarbeiro}")
+            for barbeiro in barbeiros:
+                if barbeiro['nome'] == nomeBarbeiro:
+                    continue
+                barbeiroLineEdit.addItem(f"{barbeiro['id_barbeiro']} - {barbeiro['nome']}")
 
             servicoButton = QPushButton("Selecionar")
             servicoButton.resize(80, 23)
             servicoButton.setStyleSheet("""
+                            QPushButton {
+                                border-radius: 3px; 
+                                background-color: #3498db; 
+                                color: #fff; 
+                                padding: 6px
+                            }
+                            QPushButton:hover {
+                                background-color: #2980b9;
+                            }
+            """)
+
+            confirmButton = QPushButton("Confirmar")
+            confirmButton.resize(80, 23)
+            confirmButton.setStyleSheet("""
                             QPushButton {
                                 border-radius: 3px; 
                                 background-color: #3498db; 
@@ -863,7 +913,8 @@ class AgendamentosWidget(QWidget):
 
             lblHorario = QLabel("Horário:")
             horarioDateTimeEdit = QDateTimeEdit()
-            horarioDateTimeEdit.setDisplayFormat("dd/MM/yyyy HH:mm")
+            horarioDateTimeEdit.setDateTime(qDate)
+            horarioDateTimeEdit.setDisplayFormat("dd-MM-yyyy HH:mm")
             horarioDateTimeEdit.setCalendarPopup(True)
 
             layoutHorario.addWidget(lblHorario)
@@ -876,6 +927,7 @@ class AgendamentosWidget(QWidget):
             layout.addLayout(layoutServico)
             layout.addLayout(layoutTempoeValor)
             layout.addLayout(layoutHorario)
+            layout.addWidget(confirmButton)
 
             self.showDialog.exec_()
 
@@ -986,7 +1038,7 @@ class Agendamento(QDialog):
         self.stack.setCurrentWidget(self.agendarWidget)
 
     def showAgendamentos(self):
-        # self.agendamentosWidget.searchAgendamentos()
+        self.agendamentosWidget.searchAgendamentos()
         self.stack.setCurrentWidget(self.agendamentosWidget)
 
 
