@@ -21,7 +21,7 @@ class ClienteWidget(QWidget):
         self.labelNome.setText("Nome")
         QFontDatabase.addApplicationFont("Pacifico-Regular.ttf")
         self.labelNome.setStyleSheet(
-            "font-size: 24px; background-color: #282828; color: #fff; font-family: 'Pacifico', cursive;")
+            "font-size: 24px; background-color: #282828; color: #fff")
         self.labelNome.setAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignCenter)
         self.txtNome = QLineEdit(self)
         self.txtNome.setGeometry(30, 120, 450, 30)
@@ -35,7 +35,7 @@ class ClienteWidget(QWidget):
         self.labelCpf.setText("Cpf")
         QFontDatabase.addApplicationFont("Pacifico-Regular.ttf")
         self.labelCpf.setStyleSheet(
-            "font-size: 24px; background-color: #282828; color: #fff; font-family: 'Pacifico', cursive;")
+            "font-size: 24px; background-color: #282828; color: #fff;")
         self.labelCpf.setAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignCenter)
         self.txtCpf = QLineEdit(self)
         self.txtCpf.setInputMask("999.999.999-99")
@@ -49,7 +49,7 @@ class ClienteWidget(QWidget):
         self.labelEmail.setText("Email")
         QFontDatabase.addApplicationFont("Pacifico-Regular.ttf")
         self.labelEmail.setStyleSheet(
-            "font-size: 24px; background-color: #282828; color: #fff; font-family: 'Pacifico', cursive;")
+            "font-size: 24px; background-color: #282828; color: #fff;")
         self.labelEmail.setAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignCenter)
         self.txtEmail = QLineEdit(self)
         self.txtEmail.setGeometry(30, 360, 450, 30)
@@ -63,7 +63,7 @@ class ClienteWidget(QWidget):
         self.labelDataNasc.setText("Data de Nascimento")
         QFontDatabase.addApplicationFont("Pacifico-Regular.ttf")
         self.labelDataNasc.setStyleSheet(
-            "font-size: 24px; background-color: #282828; color: #fff; font-family: 'Pacifico', cursive;")
+            "font-size: 24px; background-color: #282828; color: #fff;")
         self.labelDataNasc.setAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignCenter)
         self.txtDataNasc = QLineEdit(self)
         self.txtDataNasc.setGeometry(30, 480, 450, 30)

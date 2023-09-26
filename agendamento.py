@@ -40,7 +40,7 @@ class AgendarWidget(QWidget):
         self.nomeLabel = QLabel("Nome:")
         self.nomeInput = QLineEdit()
         self.nomeInput.installEventFilter(self)
-        self.nomeInput.textChanged.connect(self.textChangedUpperCase)
+        # self.nomeInput.textChanged.connect(self.textChangedUpperCase)
 
         # ----------------------------------------------------------------
 
@@ -708,9 +708,9 @@ class AgendamentosWidget(QWidget):
 
         self.treeWidgetAgendamentos = QTreeWidget(self)
         self.treeWidgetAgendamentos.setGeometry(0, 150, 480, 540)
-        self.treeWidgetAgendamentos.setColumnCount(6)
+        self.treeWidgetAgendamentos.setColumnCount(8)
         self.treeWidgetAgendamentos.setHeaderLabels(
-            ["Cliente", "Serviço", "Valor", "Barbeiro", "Horário", "Previsão de Término", "", ""])
+            ["Cliente", "Serviço", "Valor", "Barbeiro", "Horário", "Previsão de Término", "", "", ""])
         self.treeWidgetAgendamentos.setColumnWidth(0, 250)
         self.treeWidgetAgendamentos.setColumnWidth(1, 160)
         self.treeWidgetAgendamentos.setColumnWidth(2, 70)
@@ -719,6 +719,7 @@ class AgendamentosWidget(QWidget):
         self.treeWidgetAgendamentos.setColumnWidth(5, 145)
         self.treeWidgetAgendamentos.setColumnWidth(6, 50)
         self.treeWidgetAgendamentos.setColumnWidth(7, 50)
+        self.treeWidgetAgendamentos.setColumnWidth(8, 50)
         self.treeWidgetAgendamentos.header().setDefaultAlignment(Qt.AlignCenter | Qt.AlignVCenter)
         self.treeWidgetAgendamentos.header().setStyleSheet("""
                                 font: bold 12px; 
@@ -728,7 +729,8 @@ class AgendamentosWidget(QWidget):
                                 background-color: #f1f1f1;
         """)
         self.treeWidgetAgendamentos.setStyleSheet(stylesheetTreeWidgts)
-        self.searchAgendamentos()
+        self.searchDataButton.clicked.connect(self.searchDateAgendamento)
+        # self.searchAgendamentos()
 
     # Define a data atual
     def setToday(self):
@@ -736,17 +738,19 @@ class AgendamentosWidget(QWidget):
         formatToday = QDate().fromString(today, "dd/MM/yyyy")
         self.dataEdit.setDate(formatToday)
 
-    def searchAgendamentos(self):
+    def searchDateAgendamento(self):
         try:
             conn = ConnectDB()
             conn.conecta()
-            dateCurrent = QDateTime.currentDateTime().toString("yyyyMMdd")
+            nameClient = self.nomeInput.text()
+            date = datetime.strptime(str(self.dataEdit.text()), "%d/%m/%Y").strftime("%Y%m%d")
             sql = f"""
-                select a.id_agendamento, a.nome_cliente, s.nome_servico, s.valor_servico, b.nome, a.data_hora, a.previsao
+                select a.id_agendamento, a.nome_cliente, s.nome_servico, s.valor_servico, a.id_servico, b.nome, a.data_hora, a.previsao
                 from agendamentos a
                 inner join servicos s on a.id_servico=s.id
                 inner join barbeiro b on a.id_barbeiro=b.id_barbeiro
-                where data_hora between 20230905 and {dateCurrent}235959
+                where data_hora between {date} and {date}235959 and
+                nome_cliente like coalesce('%{nameClient}%', '') and status=0
                 order by data_hora
             """
             conn.execute(sql)
@@ -754,13 +758,13 @@ class AgendamentosWidget(QWidget):
             if clients:
                 clientCount = 0
                 self.treeWidgetAgendamentos.clear()
-                image_widget = QWidget()
                 image_layout = QHBoxLayout()
                 image_layout.setAlignment(Qt.AlignCenter)
                 for client in clients:
                     clientCount += 1
                     agendamento = QTreeWidgetItem(self.treeWidgetAgendamentos)
-                    id = str(client['id_agendamento'])
+                    idAgendamento = str(client['id_agendamento'])
+                    idServico = str(client['id_servico'])
                     nomeClient = str(client['nome_cliente'])
                     servico = str(client['nome_servico'])
                     valor = client['valor_servico']
@@ -788,8 +792,78 @@ class AgendamentosWidget(QWidget):
                     lblImageUpdate.setPixmap(pixmap2)
                     lblImageUpdate.setAlignment(Qt.AlignCenter)
 
-                    lblImageDelete.mousePressEvent = lambda event, label=id: self.deleteAgendamento(label)
-                    lblImageUpdate.mousePressEvent = lambda event, label=id: self.updateAgendamento(label)
+                    pixmap3 = QPixmap('icon-check.ico')
+                    pixmap3 = pixmap3.scaled(25, 25)
+                    lblImageCheck = QLabel()
+                    lblImageCheck.setPixmap(pixmap3)
+                    lblImageCheck.setAlignment(Qt.AlignCenter)
+
+                    lblImageCheck.mousePressEvent = lambda event, label=idAgendamento: self.checkAgendamento(label)
+                    lblImageDelete.mousePressEvent = lambda event, label=idAgendamento: self.deleteAgendamento(label)
+                    lblImageUpdate.mousePressEvent = lambda event, label=idAgendamento, label2=idServico: self.updateAgendamento(label, label2)
+
+                    self.treeWidgetAgendamentos.setItemWidget(agendamento, 6, lblImageCheck)
+                    self.treeWidgetAgendamentos.setItemWidget(agendamento, 7, lblImageDelete)
+                    self.treeWidgetAgendamentos.setItemWidget(agendamento, 8, lblImageUpdate)
+
+        except Exception as e:
+            messageDefault("Erro ao buscar agendamentos")
+            print(e)
+
+    def searchAgendamentos(self):
+        try:
+            conn = ConnectDB()
+            conn.conecta()
+            dateCurrent = QDateTime.currentDateTime().toString("yyyyMMdd")
+            sql = f"""
+                select a.id_agendamento, a.nome_cliente, s.nome_servico, s.valor_servico, a.id_servico, b.nome, a.data_hora, a.previsao
+                from agendamentos a
+                inner join servicos s on a.id_servico=s.id
+                inner join barbeiro b on a.id_barbeiro=b.id_barbeiro
+                where data_hora between {dateCurrent} and {dateCurrent}235959
+                order by data_hora
+            """
+            conn.execute(sql)
+            clients = conn.fetchall()
+            if clients:
+                clientCount = 0
+                self.treeWidgetAgendamentos.clear()
+                image_layout = QHBoxLayout()
+                image_layout.setAlignment(Qt.AlignCenter)
+                for client in clients:
+                    clientCount += 1
+                    agendamento = QTreeWidgetItem(self.treeWidgetAgendamentos)
+                    idAgendamento = str(client['id_agendamento'])
+                    idServico = str(client['id_servico'])
+                    nomeClient = str(client['nome_cliente'])
+                    servico = str(client['nome_servico'])
+                    valor = client['valor_servico']
+                    nomeBarbeiro = str(client['nome'])
+                    data = datetime.strptime(str(client['data_hora']), "%Y-%m-%d %H:%M:%S").strftime(
+                        "%d-%m-%Y %H:%M:%S") if client['data_hora'] else ""
+                    previsao = datetime.strptime(str(client['previsao']), "%Y-%m-%d %H:%M:%S").strftime(
+                        "%d-%m-%Y %H:%M:%S") if client['previsao'] else ""
+                    agendamento.setText(0, nomeClient)
+                    agendamento.setText(1, servico)
+                    agendamento.setText(2, f"R$ {float(valor):.2f}")
+                    agendamento.setText(3, nomeBarbeiro)
+                    agendamento.setText(4, data)
+                    agendamento.setText(5, previsao)
+
+                    pixmap1 = QPixmap('icon-critical.ico')
+                    pixmap1 = pixmap1.scaled(26, 26)
+                    lblImageDelete = QLabel()
+                    lblImageDelete.setPixmap(pixmap1)
+                    lblImageDelete.setAlignment(Qt.AlignCenter)
+
+                    pixmap2 = QPixmap('icon-edit.ico')
+                    pixmap2 = pixmap2.scaled(25, 25)
+                    lblImageUpdate = QLabel()
+                    lblImageUpdate.setPixmap(pixmap2)
+                    lblImageUpdate.setAlignment(Qt.AlignCenter)
+
+                    lblImageDelete.mousePressEvent = lambda event, label=idAgendamento: self.deleteAgendamento(label)
+                    lblImageUpdate.mousePressEvent = lambda event, label=idAgendamento, label2=idServico: self.updateAgendamento(label, label2)
 
                     self.treeWidgetAgendamentos.setItemWidget(agendamento, 6, lblImageDelete)
                     self.treeWidgetAgendamentos.setItemWidget(agendamento, 7, lblImageUpdate)
@@ -797,19 +871,101 @@ class AgendamentosWidget(QWidget):
         except Exception as e:
             print(e)
 
-    def deleteAgendamento(self, id):
-        conn = ConnectDB()
-        conn.conecta()
+    def closeWindow(self):
+        self.close()
+
+    def openServices(self):
         try:
-            sqlDelete = f"delete from agendamentos where id_agendamento={id}"
-            conn.execute(sqlDelete)
-            conn.commit()
-            self.searchAgendamentos()
+            self.services = QDialog(self)
+            self.services.setFixedSize(420, 300)
+            self.services.setWindowTitle("Serviços")
+            self.services.setStyleSheet("""
+                background-color: white;
+                font-size: 14px;
+                font-weight: bold;
+            """)
+
+            titleLabel = QLabel("Serviços")
+            titleLabel.setStyleSheet("font-size: 20px; font-weight: bold; padding: 10px")
+
+            scrollArea = QScrollArea(self.services)
+            scrollArea.setGeometry(0, 40, 420, 300)
+
+            scrollContent = QWidget()
+            scrollLayout = QVBoxLayout(scrollContent)
+
+            conn = ConnectDB()
+            conn.conecta()
+            sqlServices = "select * from servicos"
+            conn.execute(sqlServices)
+            services = conn.fetchall()
+            for service in services:
+                nome = service["nome_servico"]
+                valorFormatado = f"{service['valor_servico']:.2f}".replace(".", ",")
+                tempo = service["tempo_servico"]
+                horas = "m" if service["horas"] == "minutos" else "h"
+                layout = QHBoxLayout()
+                label = QLabel(f"{nome}\nR$ {valorFormatado} - {tempo}{horas}")
+                label.setStyleSheet("padding: 10px")
+                label.setFixedWidth(250)  # Limita a largura máxima do rótulo
+
+                button = QPushButton("Confirmar")
+                button.setStyleSheet("""
+                    background-color: #3498db;
+                    color: white;
+                    padding: 5px 10px;
+                    border: none;
+                    border-radius: 3px;
+                    font-weight: bold;
+                """)
+                button.setFixedSize(100, 30)
+                button.clicked.connect(lambda checked, s=service: self.onServiceSelected(s))
+
+                layout.addWidget(label)
+                layout.addWidget(button)
+                scrollLayout.addLayout(layout)
+
+                line = QFrame()
+                line.setFrameShape(QFrame.HLine)
+                line.setFrameShadow(QFrame.Sunken)
+                scrollLayout.addWidget(line)
+
+            scrollArea.setWidget(scrollContent)
+
+            main_layout = QVBoxLayout(self.services)
+            main_layout.addWidget(titleLabel)
+            main_layout.addWidget(scrollArea)
+
+            self.services.exec_()
         except Exception as e:
             print(e)
 
-    def updateAgendamento(self, id):
-        self.idAgendamento = id
+    def onServiceSelected(self, servico):
+        nome = servico["nome_servico"]
+        valorFormatado = f"{servico['valor_servico']:.2f}".replace(".", ",")
+        self.idServico = servico["id"]
+        self.tempoServico = servico["tempo_servico"]
+        self.horas = "m" if servico["horas"] == "minutos" else "h"
+        self.servicoLineEdit.setText(str(nome))
+        self.valorLineEdit.setText(str(valorFormatado))
+        self.tempoLineEdit.setText(f"{str(self.tempoServico)}{str(self.horas)}")
+        self.services.close()
+
+    def deleteAgendamento(self, idAgendamento):
+        try:
+            conn = ConnectDB()
+            conn.conecta()
+            sqlDelete = f"delete from agendamentos where id_agendamento={idAgendamento}"
+            conn.execute(sqlDelete)
+            conn.commit()
+            self.searchAgendamentos()
+            messageDefault("Agendamento excluído")
+        except Exception as e:
+            print(e)
+
+    def updateAgendamento(self, idAgendamento, idServico):
+        self.idAgendamento = idAgendamento
+        self.idServico = idServico
         try:
             conn = ConnectDB()
             conn.conecta()
@@ -822,7 +978,7 @@ class AgendamentosWidget(QWidget):
                     from agendamentos a
                     inner join servicos s on a.id_servico=s.id
                     inner join barbeiro b on a.id_barbeiro=b.id_barbeiro
-                    where id_agendamento={id}
+                    where id_agendamento={idAgendamento}
             """
             conn.execute(sqlAgendamentos)
             agendamentos = conn.fetchall()
@@ -946,86 +1102,20 @@ class AgendamentosWidget(QWidget):
         except Exception as e:
             print(e)
 
-    def closeWindow(self):
-        self.close()
-
-    def openServices(self):
-        print('Teste')
+    def checkAgendamento(self, idAgendamento):
+        conn = ConnectDB()
+        conn.conecta()
         try:
-            self.services = QDialog(self)
-            self.services.setFixedSize(420, 300)
-            self.services.setWindowTitle("Serviços")
-            self.services.setStyleSheet("""
-                background-color: white;
-                font-size: 14px;
-                font-weight: bold;
-            """)
-
-            titleLabel = QLabel("Serviços")
-            titleLabel.setStyleSheet("font-size: 20px; font-weight: bold; padding: 10px")
-
-            scrollArea = QScrollArea(self.services)
-            scrollArea.setGeometry(0, 40, 420, 300)
-
-            scrollContent = QWidget()
-            scrollLayout = QVBoxLayout(scrollContent)
-
-            conn = ConnectDB()
-            conn.conecta()
-            sqlServices = "select * from servicos"
-            conn.execute(sqlServices)
-            services = conn.fetchall()
-            for service in services:
-                nome = service["nome_servico"]
-                valorFormatado = f"{service['valor_servico']:.2f}".replace(".", ",")
-                tempo = service["tempo_servico"]
-                horas = "m" if service["horas"] == "minutos" else "h"
-                layout = QHBoxLayout()
-                label = QLabel(f"{nome}\nR$ {valorFormatado} - {tempo}{horas}")
-                label.setStyleSheet("padding: 10px")
-                label.setFixedWidth(250)  # Limita a largura máxima do rótulo
-
-                button = QPushButton("Confirmar")
-                button.setStyleSheet("""
-                    background-color: #3498db;
-                    color: white;
-                    padding: 5px 10px;
-                    border: none;
-                    border-radius: 3px;
-                    font-weight: bold;
-                """)
-                button.setFixedSize(100, 30)
-                button.clicked.connect(lambda checked, s=service: self.onServiceSelected(s))
-
-                layout.addWidget(label)
-                layout.addWidget(button)
-                scrollLayout.addLayout(layout)
-
-                line = QFrame()
-                line.setFrameShape(QFrame.HLine)
-                line.setFrameShadow(QFrame.Sunken)
-                scrollLayout.addWidget(line)
-
-            scrollArea.setWidget(scrollContent)
-
-            main_layout = QVBoxLayout(self.services)
-            main_layout.addWidget(titleLabel)
-            main_layout.addWidget(scrollArea)
-
-            self.services.exec_()
+            sql = f"UPDATE agendamentos SET status=1 where id_agendamento={idAgendamento}"
+            conn.execute(sql)
+            conn.commit()
+            self.searchDateAgendamento()
+            messageDefault("Serviço realizado! ✓")
         except Exception as e:
+            messageDefault("Erro ao atualizar status de agendamento")
             print(e)
-
-    def onServiceSelected(self, servico):
-        nome = servico["nome_servico"]
-        valorFormatado = f"{servico['valor_servico']:.2f}".replace(".", ",")
-        self.idServico = servico["id"]
-        self.tempoServico = servico["tempo_servico"]
-        self.horas = "m" if servico["horas"] == "minutos" else "h"
-        self.servicoLineEdit.setText(str(nome))
-        self.valorLineEdit.setText(str(valorFormatado))
-        self.tempoLineEdit.setText(f"{str(self.tempoServico)}{str(self.horas)}")
-        self.services.close()
+        finally:
+            conn.desconecta()
 
     def confirmUpdateAgendamento(self):
         conn = ConnectDB()
@@ -1040,6 +1130,18 @@ class AgendamentosWidget(QWidget):
             barberList = self.barbeiroLineEdit.currentText().split("-")
             barberId = barberList[0]
             sql = f"""
+                SELECT *
+                FROM `agendamentos` 
+                where id_servico={self.idServico} and data_hora={dataAlterada} and id_barbeiro={barberId}
+            """
+            conn.execute(sql)
+            verification = conn.fetchall()
+            if verification:
+                messageDefault("Nada foi alterado")
+                return
+            print(dataAlterada)
+            print(previsaoTermino)
+            sql = f"""
                 UPDATE agendamentos 
                 SET id_barbeiro={barberId}, id_servico={self.idServico}, data_hora={dataAlterada}, previsao={previsaoTermino}
                 where id_agendamento={self.idAgendamento}
@@ -1047,7 +1149,7 @@ class AgendamentosWidget(QWidget):
             conn.execute(sql)
             conn.commit()
             messageDefault("Reagendamento realizado com sucesso")
-            self.searchAgendamentos()
+            self.searchDateAgendamento()
             self.showDialog.close()
         except Exception as e:
             messageDefault("Ocorreu um erro ao reagendar")
@@ -1156,7 +1258,8 @@ class Agendamento(QDialog):
         self.stack.setCurrentWidget(self.agendarWidget)
 
     def showAgendamentos(self):
-        self.agendamentosWidget.searchAgendamentos()
+        # self.agendamentosWidget.searchAgendamentos()
+        self.agendamentosWidget.treeWidgetAgendamentos.clear()
         self.stack.setCurrentWidget(self.agendamentosWidget)
 
 
