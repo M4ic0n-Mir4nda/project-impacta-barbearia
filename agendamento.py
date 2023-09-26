@@ -262,9 +262,9 @@ class AgendarWidget(QWidget):
         self.layout.addLayout(self.servicoLayout)
         # self.layout.addWidget(self.valorLabel)
         # self.layout.addWidget(self.valorInput)
-        self. layout.addLayout(self.tempoLayout)
-        #self.layout.addWidget(self.tempoLabel)
-        #self.layout.addWidget(self.tempoInput)
+        self.layout.addLayout(self.tempoLayout)
+        # self.layout.addWidget(self.tempoLabel)
+        # self.layout.addWidget(self.tempoInput)
         self.layout.addWidget(self.barbeiroLabel)
         self.layout.addWidget(self.barbeiroInput)
         self.layout.addWidget(self.dataLabel)
@@ -368,10 +368,13 @@ class AgendarWidget(QWidget):
         valor = self.valorInput.text()
         horas = self.horaInput.text()
         minutos = self.minutoInput.text()
-        dt = datetime.strptime(f"{self.anoInput.text()}{self.mesInput.text()}{self.diaInput.text()}{horas}{minutos}00", "%Y%m%d%H%M%S")
+        dt = datetime.strptime(f"{self.anoInput.text()}{self.mesInput.text()}{self.diaInput.text()}{horas}{minutos}00",
+                               "%Y%m%d%H%M%S")
 
-        previsao = datetime.strptime(str(dt + timedelta(minutes=self.tempo)), "%Y-%m-%d %H:%M:%S").strftime("%Y%m%d%H%M%S") \
-            if self.horas == "m" else datetime.strptime(str(dt + timedelta(hours=self.tempo)), "%Y-%m-%d %H:%M:%S").strftime("%Y%m%d%H%M%S")
+        previsao = datetime.strptime(str(dt + timedelta(minutes=self.tempo)), "%Y-%m-%d %H:%M:%S").strftime(
+            "%Y%m%d%H%M%S") \
+            if self.horas == "m" else datetime.strptime(str(dt + timedelta(hours=self.tempo)),
+                                                        "%Y-%m-%d %H:%M:%S").strftime("%Y%m%d%H%M%S")
 
         data = datetime.strptime(str(dt), "%Y-%m-%d %H:%M:%S").strftime("%Y%m%d%H%M%S")
         barberList = self.barbeiroInput.currentText().split("-")
@@ -640,6 +643,10 @@ class AgendarWidget(QWidget):
 class AgendamentosWidget(QWidget):
     def __init__(self):
         super().__init__()
+        self.idServico = None
+        self.idAgendamento = None
+        self.horas = 0
+        self.tempoServico = 0
 
         self.title = QLabel(self)
         self.title.setText("Agendamentos")
@@ -702,7 +709,8 @@ class AgendamentosWidget(QWidget):
         self.treeWidgetAgendamentos = QTreeWidget(self)
         self.treeWidgetAgendamentos.setGeometry(0, 150, 480, 540)
         self.treeWidgetAgendamentos.setColumnCount(6)
-        self.treeWidgetAgendamentos.setHeaderLabels(["Cliente", "Serviço", "Valor", "Barbeiro", "Horário", "Previsão de Término", "", ""])
+        self.treeWidgetAgendamentos.setHeaderLabels(
+            ["Cliente", "Serviço", "Valor", "Barbeiro", "Horário", "Previsão de Término", "", ""])
         self.treeWidgetAgendamentos.setColumnWidth(0, 250)
         self.treeWidgetAgendamentos.setColumnWidth(1, 160)
         self.treeWidgetAgendamentos.setColumnWidth(2, 70)
@@ -757,8 +765,10 @@ class AgendamentosWidget(QWidget):
                     servico = str(client['nome_servico'])
                     valor = client['valor_servico']
                     nomeBarbeiro = str(client['nome'])
-                    data = datetime.strptime(str(client['data_hora']), "%Y-%m-%d %H:%M:%S").strftime("%d-%m-%Y %H:%M:%S") if client['data_hora'] else ""
-                    previsao = datetime.strptime(str(client['previsao']), "%Y-%m-%d %H:%M:%S").strftime("%d-%m-%Y %H:%M:%S") if client['previsao'] else ""
+                    data = datetime.strptime(str(client['data_hora']), "%Y-%m-%d %H:%M:%S").strftime(
+                        "%d-%m-%Y %H:%M:%S") if client['data_hora'] else ""
+                    previsao = datetime.strptime(str(client['previsao']), "%Y-%m-%d %H:%M:%S").strftime(
+                        "%d-%m-%Y %H:%M:%S") if client['previsao'] else ""
                     agendamento.setText(0, nomeClient)
                     agendamento.setText(1, servico)
                     agendamento.setText(2, f"R$ {float(valor):.2f}")
@@ -799,7 +809,7 @@ class AgendamentosWidget(QWidget):
             print(e)
 
     def updateAgendamento(self, id):
-        print(id)
+        self.idAgendamento = id
         try:
             conn = ConnectDB()
             conn.conecta()
@@ -844,35 +854,34 @@ class AgendamentosWidget(QWidget):
             layoutTempoeValor = QHBoxLayout()
             layoutHorario = QHBoxLayout()
 
-            # Create labels and line edits
             lblNome = QLabel("Nome:")
-            nomeLineEdit = QLineEdit()
-            nomeLineEdit.setText(nomeClient)
-            nomeLineEdit.setDisabled(True)
+            self.nomeLineEdit = QLineEdit()
+            self.nomeLineEdit.setText(nomeClient)
+            self.nomeLineEdit.setDisabled(True)
 
             lblServico = QLabel("Serviço:")
-            servicoLineEdit = QLineEdit()
-            servicoLineEdit.setText(servico)
-            servicoLineEdit.setDisabled(True)
+            self.servicoLineEdit = QLineEdit()
+            self.servicoLineEdit.setText(servico)
+            self.servicoLineEdit.setDisabled(True)
 
             lblTempo = QLabel("Tempo:")
-            tempoLineEdit = QLineEdit()
-            tempoLineEdit.setText(f"{tempo}{horas}")
-            tempoLineEdit.setDisabled(True)
+            self.tempoLineEdit = QLineEdit()
+            self.tempoLineEdit.setText(f"{tempo}{horas}")
+            self.tempoLineEdit.setDisabled(True)
 
             lblValor = QLabel("Valor:")
-            valorLineEdit = QLineEdit()
-            valorLineEdit.setText(f"{float(valor):.2f}")
-            valorLineEdit.setDisabled(True)
+            self.valorLineEdit = QLineEdit()
+            self.valorLineEdit.setText(f"{float(valor):.2f}")
+            self.valorLineEdit.setDisabled(True)
 
             lblBarbeiro = QLabel("Barbeiro:")
-            barbeiroLineEdit = QComboBox()
+            self.barbeiroLineEdit = QComboBox()
 
-            barbeiroLineEdit.addItem(f"{idBarbeiro} - {nomeBarbeiro}")
+            self.barbeiroLineEdit.addItem(f"{idBarbeiro} - {nomeBarbeiro}")
             for barbeiro in barbeiros:
                 if barbeiro['nome'] == nomeBarbeiro:
                     continue
-                barbeiroLineEdit.addItem(f"{barbeiro['id_barbeiro']} - {barbeiro['nome']}")
+                self.barbeiroLineEdit.addItem(f"{barbeiro['id_barbeiro']} - {barbeiro['nome']}")
 
             servicoButton = QPushButton("Selecionar")
             servicoButton.resize(80, 23)
@@ -903,31 +912,34 @@ class AgendamentosWidget(QWidget):
             """)
 
             layoutServico.addWidget(lblServico)
-            layoutServico.addWidget(servicoLineEdit)
+            layoutServico.addWidget(self.servicoLineEdit)
             layoutServico.addWidget(servicoButton)
 
             layoutTempoeValor.addWidget(lblTempo)
-            layoutTempoeValor.addWidget(tempoLineEdit)
+            layoutTempoeValor.addWidget(self.tempoLineEdit)
             layoutTempoeValor.addWidget(lblValor)
-            layoutTempoeValor.addWidget(valorLineEdit)
+            layoutTempoeValor.addWidget(self.valorLineEdit)
 
             lblHorario = QLabel("Horário:")
-            horarioDateTimeEdit = QDateTimeEdit()
-            horarioDateTimeEdit.setDateTime(qDate)
-            horarioDateTimeEdit.setDisplayFormat("dd-MM-yyyy HH:mm")
-            horarioDateTimeEdit.setCalendarPopup(True)
+            self.horarioDateTimeEdit = QDateTimeEdit()
+            self.horarioDateTimeEdit.setDateTime(qDate)
+            self.horarioDateTimeEdit.setDisplayFormat("dd-MM-yyyy HH:mm")
+            self.horarioDateTimeEdit.setCalendarPopup(True)
 
             layoutHorario.addWidget(lblHorario)
-            layoutHorario.addWidget(horarioDateTimeEdit)
+            layoutHorario.addWidget(self.horarioDateTimeEdit)
 
             layout.addWidget(lblNome)
-            layout.addWidget(nomeLineEdit)
+            layout.addWidget(self.nomeLineEdit)
             layout.addWidget(lblBarbeiro)
-            layout.addWidget(barbeiroLineEdit)
+            layout.addWidget(self.barbeiroLineEdit)
             layout.addLayout(layoutServico)
             layout.addLayout(layoutTempoeValor)
             layout.addLayout(layoutHorario)
             layout.addWidget(confirmButton)
+
+            servicoButton.clicked.connect(self.openServices)
+            confirmButton.clicked.connect(self.confirmUpdateAgendamento)
 
             self.showDialog.exec_()
 
@@ -936,6 +948,112 @@ class AgendamentosWidget(QWidget):
 
     def closeWindow(self):
         self.close()
+
+    def openServices(self):
+        print('Teste')
+        try:
+            self.services = QDialog(self)
+            self.services.setFixedSize(420, 300)
+            self.services.setWindowTitle("Serviços")
+            self.services.setStyleSheet("""
+                background-color: white;
+                font-size: 14px;
+                font-weight: bold;
+            """)
+
+            titleLabel = QLabel("Serviços")
+            titleLabel.setStyleSheet("font-size: 20px; font-weight: bold; padding: 10px")
+
+            scrollArea = QScrollArea(self.services)
+            scrollArea.setGeometry(0, 40, 420, 300)
+
+            scrollContent = QWidget()
+            scrollLayout = QVBoxLayout(scrollContent)
+
+            conn = ConnectDB()
+            conn.conecta()
+            sqlServices = "select * from servicos"
+            conn.execute(sqlServices)
+            services = conn.fetchall()
+            for service in services:
+                nome = service["nome_servico"]
+                valorFormatado = f"{service['valor_servico']:.2f}".replace(".", ",")
+                tempo = service["tempo_servico"]
+                horas = "m" if service["horas"] == "minutos" else "h"
+                layout = QHBoxLayout()
+                label = QLabel(f"{nome}\nR$ {valorFormatado} - {tempo}{horas}")
+                label.setStyleSheet("padding: 10px")
+                label.setFixedWidth(250)  # Limita a largura máxima do rótulo
+
+                button = QPushButton("Confirmar")
+                button.setStyleSheet("""
+                    background-color: #3498db;
+                    color: white;
+                    padding: 5px 10px;
+                    border: none;
+                    border-radius: 3px;
+                    font-weight: bold;
+                """)
+                button.setFixedSize(100, 30)
+                button.clicked.connect(lambda checked, s=service: self.onServiceSelected(s))
+
+                layout.addWidget(label)
+                layout.addWidget(button)
+                scrollLayout.addLayout(layout)
+
+                line = QFrame()
+                line.setFrameShape(QFrame.HLine)
+                line.setFrameShadow(QFrame.Sunken)
+                scrollLayout.addWidget(line)
+
+            scrollArea.setWidget(scrollContent)
+
+            main_layout = QVBoxLayout(self.services)
+            main_layout.addWidget(titleLabel)
+            main_layout.addWidget(scrollArea)
+
+            self.services.exec_()
+        except Exception as e:
+            print(e)
+
+    def onServiceSelected(self, servico):
+        nome = servico["nome_servico"]
+        valorFormatado = f"{servico['valor_servico']:.2f}".replace(".", ",")
+        self.idServico = servico["id"]
+        self.tempoServico = servico["tempo_servico"]
+        self.horas = "m" if servico["horas"] == "minutos" else "h"
+        self.servicoLineEdit.setText(str(nome))
+        self.valorLineEdit.setText(str(valorFormatado))
+        self.tempoLineEdit.setText(f"{str(self.tempoServico)}{str(self.horas)}")
+        self.services.close()
+
+    def confirmUpdateAgendamento(self):
+        conn = ConnectDB()
+        conn.conecta()
+        try:
+            dataAlterada = datetime.strptime(str(self.horarioDateTimeEdit.text()), "%d-%m-%Y %H:%M").strftime("%Y%m%d%H%M%S")
+            dataFormatada = datetime.strptime(str(self.horarioDateTimeEdit.text()), "%d-%m-%Y %H:%M")
+            previsaoTermino = datetime.strptime(str(dataFormatada + timedelta(minutes=self.tempoServico)),
+                                                "%Y-%m-%d %H:%M:%S").strftime("%Y%m%d%H%M%S") \
+                if self.horas == "m" else datetime.strptime(str(dataFormatada + timedelta(hours=self.tempoServico)),
+                                                            "%Y-%m-%d %H:%M:%S").strftime("%Y%m%d%H%M%S")
+            barberList = self.barbeiroLineEdit.currentText().split("-")
+            barberId = barberList[0]
+            sql = f"""
+                UPDATE agendamentos 
+                SET id_barbeiro={barberId}, id_servico={self.idServico}, data_hora={dataAlterada}, previsao={previsaoTermino}
+                where id_agendamento={self.idAgendamento}
+            """
+            conn.execute(sql)
+            conn.commit()
+            messageDefault("Reagendamento realizado com sucesso")
+            self.searchAgendamentos()
+            self.showDialog.close()
+        except Exception as e:
+            messageDefault("Ocorreu um erro ao reagendar")
+            print(e)
+        finally:
+            conn.desconecta()
 
 
 class WorkerTreadTime(QThread):
@@ -972,7 +1090,7 @@ class Agendamento(QDialog):
             border-radius: 5px;
             padding: 5px;
         }"""
-        )
+                           )
         self.resize(750, 712)
         self.center_dialog()
 
@@ -1047,5 +1165,3 @@ if __name__ == '__main__':
     dialog = Agendamento()
     dialog.show()
     sys.exit(app.exec_())
-
-
