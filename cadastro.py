@@ -26,7 +26,7 @@ class ClienteWidget(QWidget):
         self.txtNome = QLineEdit(self)
         self.txtNome.setGeometry(30, 120, 450, 30)
         self.txtNome.setPlaceholderText("Nome...")
-        self.txtNome.setStyleSheet("border: 3px solid #282828; border-radius: 5px; font-size: 15px")
+        self.txtNome.setStyleSheet("border: 3px solid #282828; border-radius: 5px; font-size: 15px; font-family: Arial")
 
         # ---------------------------------------------------
 
@@ -40,7 +40,7 @@ class ClienteWidget(QWidget):
         self.txtCpf = QLineEdit(self)
         self.txtCpf.setInputMask("999.999.999-99")
         self.txtCpf.setGeometry(30, 245, 450, 30)
-        self.txtCpf.setStyleSheet("border: 3px solid #282828; border-radius: 5px; font-size: 15px")
+        self.txtCpf.setStyleSheet("border: 3px solid #282828; border-radius: 5px; font-size: 15px; font-family: Arial")
 
         # ---------------------------------------------------
 
@@ -54,7 +54,7 @@ class ClienteWidget(QWidget):
         self.txtEmail = QLineEdit(self)
         self.txtEmail.setGeometry(30, 360, 450, 30)
         self.txtEmail.setPlaceholderText("exemploemail@gmail.com")
-        self.txtEmail.setStyleSheet("border: 3px solid #282828; border-radius: 5px; font-size: 15px")
+        self.txtEmail.setStyleSheet("border: 3px solid #282828; border-radius: 5px; font-size: 15px; font-family: Arial")
 
         # ---------------------------------------------------
 
@@ -68,7 +68,7 @@ class ClienteWidget(QWidget):
         self.txtDataNasc = QLineEdit(self)
         self.txtDataNasc.setGeometry(30, 480, 450, 30)
         self.txtDataNasc.setInputMask("99/99/9999")
-        self.txtDataNasc.setStyleSheet("border: 3px solid #282828; border-radius: 5px; font-size: 15px")
+        self.txtDataNasc.setStyleSheet("border: 3px solid #282828; border-radius: 5px; font-size: 15px; font-family: Arial")
 
     def insertData(self):
         conn = ConnectDB()

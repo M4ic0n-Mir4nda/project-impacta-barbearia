@@ -5,6 +5,7 @@ from PyQt5 import QtGui
 from PyQt5.QtCore import Qt
 from cadastro import Cadastro
 from agendamento import Agendamento
+from cadastroServico import CadastroServico
 
 
 class MainWindow(QMainWindow):
@@ -35,6 +36,7 @@ class MainWindow(QMainWindow):
         self.pixmap = self.pixmap.scaled(100, 100)
         self.imgNavalha.setPixmap(self.pixmap)
         self.imgNavalha.resize(self.pixmap.width(), self.pixmap.height())
+        self.imgNavalha.mousePressEvent = self.pressCadastroServico
 
         # ------------------------------------------------------
 
@@ -91,6 +93,10 @@ class MainWindow(QMainWindow):
 
     def leave(self, event):
         print('Teste')
+
+    def pressCadastroServico(self, event):
+        windowCadService = CadastroServico()
+        windowCadService.exec()
 
     def pressCadastro(self, event):
         windowCad = Cadastro(self)
