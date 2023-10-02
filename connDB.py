@@ -3,7 +3,7 @@ import mysql.connector
 
 
 class ConnectDB:
-    def __init__(self, host="database-1.cxbop75vyypg.us-east-1.rds.amazonaws.com", port="3306", database="studio_beard", user="root", password="maicon205436"):
+    def __init__(self, host="localhost", port="3306", database="studio_beard", user="root", password="root"):
         self.host = host
         self.port = port
         self.database = database

@@ -5,6 +5,7 @@ from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import Qt, QRegExp, QThread, QEvent, pyqtSignal
 from PyQt5.QtGui import QPixmap, QFontDatabase, QRegExpValidator, QIcon
 from connDB import ConnectDB
+from message import messageDefault
 from datetime import datetime
 
 
@@ -20,12 +21,12 @@ class ClienteWidget(QWidget):
         self.labelNome.setText("Nome")
         QFontDatabase.addApplicationFont("Pacifico-Regular.ttf")
         self.labelNome.setStyleSheet(
-            "font-size: 24px; background-color: #282828; color: #fff; font-family: 'Pacifico', cursive;")
+            "font-size: 24px; background-color: #282828; color: #fff")
         self.labelNome.setAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignCenter)
         self.txtNome = QLineEdit(self)
         self.txtNome.setGeometry(30, 120, 450, 30)
         self.txtNome.setPlaceholderText("Nome...")
-        self.txtNome.setStyleSheet("border: 3px solid #282828; border-radius: 5px; font-size: 15px")
+        self.txtNome.setStyleSheet("border: 3px solid #282828; border-radius: 5px; font-size: 15px; font-family: Arial")
 
         # ---------------------------------------------------
 
@@ -34,12 +35,12 @@ class ClienteWidget(QWidget):
         self.labelCpf.setText("Cpf")
         QFontDatabase.addApplicationFont("Pacifico-Regular.ttf")
         self.labelCpf.setStyleSheet(
-            "font-size: 24px; background-color: #282828; color: #fff; font-family: 'Pacifico', cursive;")
+            "font-size: 24px; background-color: #282828; color: #fff;")
         self.labelCpf.setAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignCenter)
         self.txtCpf = QLineEdit(self)
         self.txtCpf.setInputMask("999.999.999-99")
         self.txtCpf.setGeometry(30, 245, 450, 30)
-        self.txtCpf.setStyleSheet("border: 3px solid #282828; border-radius: 5px; font-size: 15px")
+        self.txtCpf.setStyleSheet("border: 3px solid #282828; border-radius: 5px; font-size: 15px; font-family: Arial")
 
         # ---------------------------------------------------
 
@@ -48,12 +49,12 @@ class ClienteWidget(QWidget):
         self.labelEmail.setText("Email")
         QFontDatabase.addApplicationFont("Pacifico-Regular.ttf")
         self.labelEmail.setStyleSheet(
-            "font-size: 24px; background-color: #282828; color: #fff; font-family: 'Pacifico', cursive;")
+            "font-size: 24px; background-color: #282828; color: #fff;")
         self.labelEmail.setAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignCenter)
         self.txtEmail = QLineEdit(self)
         self.txtEmail.setGeometry(30, 360, 450, 30)
         self.txtEmail.setPlaceholderText("exemploemail@gmail.com")
-        self.txtEmail.setStyleSheet("border: 3px solid #282828; border-radius: 5px; font-size: 15px")
+        self.txtEmail.setStyleSheet("border: 3px solid #282828; border-radius: 5px; font-size: 15px; font-family: Arial")
 
         # ---------------------------------------------------
 
@@ -62,12 +63,12 @@ class ClienteWidget(QWidget):
         self.labelDataNasc.setText("Data de Nascimento")
         QFontDatabase.addApplicationFont("Pacifico-Regular.ttf")
         self.labelDataNasc.setStyleSheet(
-            "font-size: 24px; background-color: #282828; color: #fff; font-family: 'Pacifico', cursive;")
+            "font-size: 24px; background-color: #282828; color: #fff;")
         self.labelDataNasc.setAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignCenter)
         self.txtDataNasc = QLineEdit(self)
         self.txtDataNasc.setGeometry(30, 480, 450, 30)
         self.txtDataNasc.setInputMask("99/99/9999")
-        self.txtDataNasc.setStyleSheet("border: 3px solid #282828; border-radius: 5px; font-size: 15px")
+        self.txtDataNasc.setStyleSheet("border: 3px solid #282828; border-radius: 5px; font-size: 15px; font-family: Arial")
 
     def insertData(self):
         conn = ConnectDB()
@@ -179,111 +180,15 @@ class Cadastro(QDialog):
             print(e)
         if self.clienteWidget.txtNome.text() == "" or self.clienteWidget.txtCpf.text() == "" or \
                 self.clienteWidget.txtEmail.text() == "" or self.clienteWidget.txtDataNasc.text() == "":
-            info_box = QMessageBox(self)
-            info_box.setWindowIcon(QtGui.QIcon("icon-information"))
-            info_box.setIcon(QMessageBox.Information)
-            info_box.setWindowTitle("Informação")
-            info_box.setText("Preencha todos os campos!")
-            info_box.setStyleSheet("""
-                QMessageBox {
-                    background-color: #f4f4f4;
-                    border: 2px solid #3498db;
-                }
-                QMessageBox QLabel {
-                    color: #3498db;
-                    font-size: 20px;
-                }
-                QMessageBox QPushButton {
-                    background-color: #3498db;
-                    width: 70px;
-                    color: white;
-                    padding: 5px 20px;
-                    border-radius: 5px;
-                    margin: 0 auto
-                }
-                QMessageBox QPushButton:hover {
-                    background-color: #2980b9;
-                }
-                            /* Personalizar a barra de título */
-                QHeaderView {
-                    background-color: #3498db;
-                    color: white;
-                    padding: 5px;
-                }
-            """)
-            info_box.exec_()
+            messageDefault("Preencha todos os campos!")
             return
 
         if not "@" in self.clienteWidget.txtEmail.text():
-            info_box = QMessageBox(self)
-            info_box.setWindowIcon(QtGui.QIcon("icon-information"))
-            info_box.setIcon(QMessageBox.Information)
-            info_box.setWindowTitle("Informação")
-            info_box.setText("Endereço de email inválido.")
-            info_box.setStyleSheet("""
-                QMessageBox {
-                    background-color: #f4f4f4;
-                    border: 2px solid #3498db;
-                }
-                QMessageBox QLabel {
-                    color: #3498db;
-                    font-size: 20px;
-                }
-                QMessageBox QPushButton {
-                    background-color: #3498db;
-                    width: 70px;
-                    color: white;
-                    padding: 5px 20px;
-                    border-radius: 5px;
-                    margin: 0 auto
-                }
-                QMessageBox QPushButton:hover {
-                    background-color: #2980b9;
-                }
-                            /* Personalizar a barra de título */
-                QHeaderView {
-                    background-color: #3498db;
-                    color: white;
-                    padding: 5px;
-                }
-            """)
-            info_box.exec_()
+            messageDefault("Endereço de email inválido")
             return
 
         if validaCpf:
-            info_box = QMessageBox(self)
-            info_box.setWindowIcon(QtGui.QIcon("icon-information"))
-            info_box.setIcon(QMessageBox.Information)
-            info_box.setWindowTitle("Informação")
-            info_box.setText("CPF já existe")
-            info_box.setStyleSheet("""
-                QMessageBox {
-                    background-color: #f4f4f4;
-                    border: 2px solid #3498db;
-                }
-                QMessageBox QLabel {
-                    color: #3498db;
-                    font-size: 20px;
-                }
-                QMessageBox QPushButton {
-                    background-color: #3498db;
-                    width: 70px;
-                    color: white;
-                    padding: 5px 20px;
-                    border-radius: 5px;
-                    margin: 0 auto
-                }
-                QMessageBox QPushButton:hover {
-                    background-color: #2980b9;
-                }
-                            /* Personalizar a barra de título */
-                QHeaderView {
-                    background-color: #3498db;
-                    color: white;
-                    padding: 5px;
-                }
-            """)
-            info_box.exec_()
+            messageDefault("CPF já cadastrado")
             return
 
         self.saveData()
@@ -297,7 +202,6 @@ class Cadastro(QDialog):
             self.buttonSalvar.setDisabled(True)
             self.buttonFechar.setDisabled(True)
             worker = WorkerThread(self)
-            print(worker)
             worker.start()
             worker.validationFinished.connect(self.handleValidationResult)
         except Exception as e:
@@ -307,39 +211,7 @@ class Cadastro(QDialog):
         if validados:
             self.buttonSalvar.setEnabled(True)
             self.buttonFechar.setEnabled(True)
-            info_box = QMessageBox(self)
-            info_box.setWindowIcon(QtGui.QIcon("icon-information"))
-            info_box.setIcon(QMessageBox.Information)
-            info_box.setWindowTitle("Informação")
-            info_box.setText("Cadastro efetuado com sucesso")
-            info_box.setStyleSheet("""
-                QMessageBox {
-                    background-color: #f4f4f4;
-                    border: 2px solid #3498db;
-                }
-                QMessageBox QLabel {
-                    color: #3498db;
-                    font-size: 20px;
-                }
-                QMessageBox QPushButton {
-                    background-color: #3498db;
-                    width: 70px;
-                    color: white;
-                    padding: 5px 20px;
-                    border-radius: 5px;
-                    margin: 0 auto
-                }
-                QMessageBox QPushButton:hover {
-                    background-color: #2980b9;
-                }
-                            /* Personalizar a barra de título */
-                QHeaderView {
-                    background-color: #3498db;
-                    color: white;
-                    padding: 5px;
-                }
-            """)
-            info_box.exec_()
+            messageDefault("Cadastro efetuado com sucesso")
             self.clienteWidget.txtNome.setText("")
             self.clienteWidget.txtCpf.setText("")
             self.clienteWidget.txtEmail.setText("")
@@ -348,39 +220,7 @@ class Cadastro(QDialog):
         else:
             self.buttonSalvar.setEnabled(True)
             self.buttonFechar.setEnabled(True)
-            info_box = QMessageBox(self)
-            info_box.setWindowIcon(QtGui.QIcon("icon-critical"))
-            info_box.setIcon(QMessageBox.Information)
-            info_box.setWindowTitle("Erro")
-            info_box.setText("Erro: Verifique os campos e tente novamente.")
-            info_box.setStyleSheet("""
-                QMessageBox {
-                    background-color: #f4f4f4;
-                    border: 2px solid #3498db;
-                }
-                QMessageBox QLabel {
-                    color: #3498db;
-                    font-size: 20px;
-                }
-                QMessageBox QPushButton {
-                    background-color: #3498db;
-                    width: 70px;
-                    color: white;
-                    padding: 5px 20px;
-                    border-radius: 5px;
-                    margin: 0 auto
-                }
-                QMessageBox QPushButton:hover {
-                    background-color: #2980b9;
-                }
-                            /* Personalizar a barra de título */
-                QHeaderView {
-                    background-color: #3498db;
-                    color: white;
-                    padding: 5px;
-                }
-            """)
-            info_box.exec_()
+            messageDefault("Erro: Verifique os campos e tente novamente.")
 
     def closeWindow(self):
         self.close()
