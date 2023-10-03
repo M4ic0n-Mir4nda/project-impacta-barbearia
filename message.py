@@ -6,7 +6,7 @@ from PyQt5 import QtCore, QtGui
 
 def messageDefault(message):
     info_box = QMessageBox()
-    info_box.setWindowIcon(QtGui.QIcon("icon-information"))
+    info_box.setWindowIcon(QtGui.QIcon("assets/icon-information"))
     info_box.setIcon(QMessageBox.Information)
     info_box.setWindowTitle("Informação")
     info_box.setText(f"{message}")

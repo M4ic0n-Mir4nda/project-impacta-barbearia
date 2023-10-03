@@ -798,19 +798,19 @@ class AgendamentosWidget(QWidget):
                     agendamento.setText(4, data)
                     agendamento.setText(5, previsao)
 
-                    pixmap1 = QPixmap('icon-critical.ico')
+                    pixmap1 = QPixmap('assets/icon-critical.ico')
                     pixmap1 = pixmap1.scaled(26, 26)
                     lblImageDelete = QLabel()
                     lblImageDelete.setPixmap(pixmap1)
                     lblImageDelete.setAlignment(Qt.AlignCenter)
 
-                    pixmap2 = QPixmap('icon-edit.ico')
+                    pixmap2 = QPixmap('assets/icon-edit.ico')
                     pixmap2 = pixmap2.scaled(25, 25)
                     lblImageUpdate = QLabel()
                     lblImageUpdate.setPixmap(pixmap2)
                     lblImageUpdate.setAlignment(Qt.AlignCenter)
 
-                    pixmap3 = QPixmap('icon-check.ico')
+                    pixmap3 = QPixmap('assets/icon-check.ico')
                     pixmap3 = pixmap3.scaled(25, 25)
                     lblImageCheck = QLabel()
                     lblImageCheck.setPixmap(pixmap3)

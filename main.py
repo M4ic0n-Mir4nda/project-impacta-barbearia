@@ -14,8 +14,8 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Barber Shop")
         self.resize(750, 650)
         self.setWindowFlags(self.windowFlags() & ~Qt.WindowMaximizeButtonHint)
-        self.setWindowIcon(QtGui.QIcon("iconBarber.ico"))
-        self.setStyleSheet("QMainWindow {background: url(wallpaper.jpg)}")
+        self.setWindowIcon(QtGui.QIcon("assets/iconBarber.ico"))
+        self.setStyleSheet("QMainWindow {background: url(assets/wallpaper.jpg)}")
         QFontDatabase.addApplicationFont("GreatVibes-Regular.ttf")
 
         # ------------------------------------------------------
@@ -32,7 +32,7 @@ class MainWindow(QMainWindow):
         self.imgNavalha.setGeometry(185, 120, 200, 180)
         self.imgNavalha.setStyleSheet("background-color: #282828; border-radius: 5px;")
         self.imgNavalha.setMouseTracking(True)
-        self.pixmap = QPixmap('imgNavalha.png')
+        self.pixmap = QPixmap('assets/imgNavalha.png')
         self.pixmap = self.pixmap.scaled(100, 100)
         self.imgNavalha.setPixmap(self.pixmap)
         self.imgNavalha.resize(self.pixmap.width(), self.pixmap.height())
@@ -50,7 +50,7 @@ class MainWindow(QMainWindow):
 
         self.imgCadeira = QLabel(self)
         self.imgCadeira.setGeometry(480, 120, 350, 100)
-        self.pixmap = QPixmap('imgCadeira.png')
+        self.pixmap = QPixmap('assets/imgCadeira.png')
         self.pixmap = self.pixmap.scaled(100, 100)
         self.imgCadeira.setPixmap(self.pixmap)
         self.imgCadeira.resize(self.pixmap.width(), self.pixmap.height())
@@ -68,7 +68,7 @@ class MainWindow(QMainWindow):
 
         self.imgUser = QLabel(self)
         self.imgUser.setGeometry(200, 450, 350, 100)
-        self.pixmap = QPixmap('imgUser.png')
+        self.pixmap = QPixmap('assets/imgUser.png')
         self.pixmap = self.pixmap.scaled(75, 75)
         self.imgUser.setPixmap(self.pixmap)
         self.imgUser.resize(self.pixmap.width(), self.pixmap.height())
@@ -86,13 +86,10 @@ class MainWindow(QMainWindow):
 
         self.imgAbout = QLabel(self)
         self.imgAbout.setGeometry(490, 450, 350, 100)
-        self.pixmap = QPixmap('imgAbout.png')
+        self.pixmap = QPixmap('assets/imgAbout.png')
         self.pixmap = self.pixmap.scaled(75, 75)
         self.imgAbout.setPixmap(self.pixmap)
         self.imgAbout.resize(self.pixmap.width(), self.pixmap.height())
-
-    def leave(self, event):
-        print('Teste')
 
     def pressCadastroServico(self, event):
         windowCadService = CadastroServico()
