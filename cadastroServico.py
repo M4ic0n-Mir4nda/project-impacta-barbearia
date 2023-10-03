@@ -26,7 +26,7 @@ class CadastroServiceWidget(QWidget):
         super().__init__()
         self.background = QLabel(self)
         self.background.setGeometry(0, 0, 750, 712)
-        self.background.setStyleSheet("background: url(wallpaper.jpg)")
+        self.background.setStyleSheet("background: url(assets/wallpaper.jpg)")
 
         self.labelNomeServico = QLabel(self)
         self.labelNomeServico.setGeometry(30, 80, 200, 45)
@@ -124,7 +124,7 @@ class CadastroServico(QDialog):
 
         self.imgLogo = QLabel(self)
         self.imgLogo.setGeometry(20, 20, 100, 180)
-        self.pixmap = QPixmap('title.png')
+        self.pixmap = QPixmap('assets/logo.png')
         self.pixmap = self.pixmap.scaled(200, 200)
         self.imgLogo.setPixmap(self.pixmap)
         self.imgLogo.resize(self.pixmap.width(), self.pixmap.height())
