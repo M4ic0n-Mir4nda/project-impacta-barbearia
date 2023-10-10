@@ -21,6 +21,16 @@ def fDecimal(num):
     return valor
 
 
+def fTempoServico(num):
+    num = num.replace(":", "")
+    num = str(num).zfill(8)
+    a = num[-6:-4]
+    b = num[-4:-2]
+    c = num[-2:]
+    num = a + ":" + b + ":" + c
+    return num
+
+
 class CadastroServiceWidget(QWidget):
     def __init__(self):
         super().__init__()
@@ -49,9 +59,10 @@ class CadastroServiceWidget(QWidget):
         self.labelTmpServico.setStyleSheet(
             "font-size: 24px; background-color: #282828; color: #fff")
         self.txtTmpServico = QLineEdit(self)
-        rx = QtCore.QRegExp("[/\d+\,?\d*/5]{2}")
+        self.txtTmpServico.setText("00:00:00")
+        rx = QtCore.QRegExp("[/\d+\,?\d*/5]{10}")
         val = QRegExpValidator(rx)  # +++
-        self.txtTmpServico.setValidator(val)
+        # self.txtTmpServico.setValidator(val)
         self.txtTmpServico.setGeometry(30, 300, 355, 30)
         self.txtTmpServico.setAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignCenter)
         self.txtTmpServico.setStyleSheet("border: 3px solid #282828; border-radius: 5px; font-size: 15px; font-family: Arial")
@@ -69,6 +80,8 @@ class CadastroServiceWidget(QWidget):
         self.box.addItem("")
         self.box.addItem("minutos")
         self.box.addItem("horas")
+
+        self.box.setDisabled(True)
 
         # ---------------------------------------------------
 
@@ -165,6 +178,7 @@ class CadastroServico(QDialog):
             """)
 
         self.cadastroServiceWidget.txtNome.setFocus()
+        self.cadastroServiceWidget.txtTmpServico.textChanged.connect(self.txtTempoServico_textChanged)
         self.cadastroServiceWidget.txtValor.textChanged.connect(self.txtValorServico_textChanged)
         self.buttonSalvar.clicked.connect(self.saveData)
         self.buttonFechar.clicked.connect(self.closeWindow)
@@ -208,6 +222,36 @@ class CadastroServico(QDialog):
     def txtValorServico_textChanged(self):
         text = self.cadastroServiceWidget.txtValor.text()
         self.cadastroServiceWidget.txtValor.setText(fDecimal(text))
+
+    def txtTempoServico_textChanged(self):
+        try:
+            text = self.cadastroServiceWidget.txtTmpServico.text()
+            horas = int(text[0:2])
+            minutos = int(text[3:5])
+            segundos = int(text[6:8])
+
+            if segundos > 59:
+                self.cadastroServiceWidget.txtTmpServico.setText(f"{horas:02d}:{minutos:02d}:59")
+                return
+
+            if minutos > 59:
+                self.cadastroServiceWidget.txtTmpServico.setText(f"{horas:02d}:59:{segundos:02d}")
+                return
+
+            if horas > 24:
+                self.cadastroServiceWidget.txtTmpServico.setText(f"24:{minutos:02d}:{segundos:02d}")
+                return
+
+            if 1 <= minutos < 59:
+                self.cadastroServiceWidget.box.setCurrentIndex(1)
+            if horas >= 1:
+                self.cadastroServiceWidget.box.setCurrentIndex(2)
+            if text == "00:00:00":
+                self.cadastroServiceWidget.box.setCurrentIndex(0)
+            self.cadastroServiceWidget.txtTmpServico.setText(fTempoServico(text))
+        except Exception as e:
+            self.cadastroServiceWidget.txtTmpServico.setText("00:00:00")
+            print(e)
 
     def keyPressEvent(self, e):
         if e.key() == Qt.Key_Escape:

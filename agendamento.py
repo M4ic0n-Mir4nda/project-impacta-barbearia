@@ -121,6 +121,7 @@ class AgendarWidget(QWidget):
 
         self.dateTime = QDateTime.currentDateTime()
         self.dataLabel = QLabel("Data:")
+        self.dataLabel.setStyleSheet("color: #fff")
 
         self.diaInput = QLineEdit()
         self.diaInput.setStyleSheet("border-radius: 0px;")
@@ -199,6 +200,7 @@ class AgendarWidget(QWidget):
 
         self.separator = QLabel(":")
         self.separator.setStyleSheet("font-size: 20px")
+        self.separator.setStyleSheet("color: #fff")
 
         self.minutoInput = QLineEdit()
         self.minutoInput.setMaxLength(2)
