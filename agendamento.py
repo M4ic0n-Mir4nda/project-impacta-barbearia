@@ -1,10 +1,9 @@
 import sys
-import locale
 from PyQt5.QtWidgets import QApplication, QDialog, QLabel, QPushButton, QVBoxLayout, QWidget, QStackedWidget, QLineEdit, \
-    QMessageBox, QHBoxLayout, QTreeWidget, QTreeWidgetItem, QScrollArea, QSizePolicy, QFrame, QComboBox, QDateEdit, \
-    QCalendarWidget, QDateTimeEdit
-from PyQt5 import QtCore, QtGui
-from PyQt5.QtCore import Qt, QThread, QEvent, QDateTime, QTimer, QDate, QTime
+    QHBoxLayout, QTreeWidget, QTreeWidgetItem, QScrollArea, QFrame, QComboBox, QDateEdit, \
+    QDateTimeEdit
+from PyQt5 import QtCore
+from PyQt5.QtCore import Qt, QThread, QEvent, QDateTime, QTimer, QDate
 from PyQt5.QtGui import QPixmap
 from datetime import datetime, timedelta
 from connDB import ConnectDB
@@ -828,6 +827,7 @@ class AgendamentosWidget(QWidget):
                     self.treeWidgetAgendamentos.setItemWidget(agendamento, 8, lblImageUpdate)
             else:
                 self.treeWidgetAgendamentos.clear()
+                messageDefault("Não há agendamentos!")
 
         except Exception as e:
             messageDefault("Erro ao buscar agendamentos")
@@ -1203,7 +1203,8 @@ class Agendamento(QDialog):
                     width: 100px
                     }
                 QPushButton:hover { 
-                    background-color: #474747; }"""
+                    background-color: #474747;
+                }"""
         )
 
         self.buttonAgendamentos.setStyleSheet("""
