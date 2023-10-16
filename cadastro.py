@@ -1,9 +1,8 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QDialog, QLabel, QPushButton, QVBoxLayout, QWidget, QStackedWidget, QLineEdit, \
-    QMessageBox
-from PyQt5 import QtCore, QtGui
-from PyQt5.QtCore import Qt, QRegExp, QThread, QEvent, pyqtSignal
-from PyQt5.QtGui import QPixmap, QFontDatabase, QRegExpValidator, QIcon
+from PyQt5.QtWidgets import QApplication, QDialog, QLabel, QPushButton, QVBoxLayout, QWidget, QStackedWidget, QLineEdit
+from PyQt5 import QtCore
+from PyQt5.QtCore import Qt, QThread, pyqtSignal
+from PyQt5.QtGui import QPixmap, QFontDatabase
 from connDB import ConnectDB
 from message import messageDefault
 from datetime import datetime
@@ -100,8 +99,9 @@ class FuncionarioWidget(QWidget):
 
 
 class Cadastro(QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, permissao, parent=None):
         super().__init__(parent)
+        self.permissao = permissao
         self.setWindowTitle("Cadastros")
         self.setWindowFlag(Qt.FramelessWindowHint)
         self.resize(750, 712)
@@ -119,25 +119,28 @@ class Cadastro(QDialog):
         self.imgLogo.resize(self.pixmap.width(), self.pixmap.height())
 
         self.clienteButton = QPushButton("Cliente", self.container)
-        self.funcionarioButton = QPushButton("Funcionário", self.container)
-
         self.clienteButton.clicked.connect(self.showCliente)
-        self.funcionarioButton.clicked.connect(self.showFuncionario)
 
         self.clienteButton.setStyleSheet(
             "QPushButton { background-color: #3498db; color: white; font-size: 16px; padding: 10px; border: none; }"
             "QPushButton:hover { background-color: #2980b9; }"
         )
 
-        self.funcionarioButton.setStyleSheet(
-            "QPushButton { background-color: #e74c3c; color: white; font-size: 16px; padding: 10px; border: none; }"
-            "QPushButton:hover { background-color: #c0392b; }"
-        )
-
         menuLayout = QVBoxLayout()
         menuLayout.setContentsMargins(10, 200, 10, 300)  # Ajuste as margens inferior para mover o menu para cima
         menuLayout.addWidget(self.clienteButton)
-        menuLayout.addWidget(self.funcionarioButton)
+
+        if self.permissao == 1:
+            self.funcionarioButton = QPushButton("Funcionário", self.container)
+            self.funcionarioButton.clicked.connect(self.showFuncionario)
+            menuLayout.addWidget(self.funcionarioButton)
+            self.funcionarioButton.setStyleSheet(
+                "QPushButton { background-color: #e74c3c; color: white; font-size: 16px; padding: 10px; border: none; }"
+                "QPushButton:hover { background-color: #c0392b; }"
+            )
+        else:
+            pass
+
         self.container.setLayout(menuLayout)
 
         self.stack = QStackedWidget(self)

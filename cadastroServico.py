@@ -1,19 +1,17 @@
 import sys
-import locale
 from PyQt5.QtWidgets import QApplication, QDialog, QLabel, QPushButton, QVBoxLayout, QWidget, QStackedWidget, QLineEdit, \
-    QMessageBox, QComboBox
-from PyQt5 import QtCore, QtGui
-from PyQt5.QtCore import Qt, QRegExp, QThread, QEvent, pyqtSignal
-from PyQt5.QtGui import QPixmap, QFontDatabase, QRegExpValidator, QIcon
+    QComboBox
+from PyQt5 import QtCore
+from PyQt5.QtCore import Qt, QThread, pyqtSignal
+from PyQt5.QtGui import QPixmap, QFontDatabase, QRegExpValidator
 from connDB import ConnectDB
-from datetime import datetime
 from message import messageDefault
 
 
 def fDecimal(num):
     num = num.replace(",", "")
     num = num.replace(".", "")
-    num = str(num).zfill(3)  # f"{num:03}"
+    num = str(num).zfill(3)
     a = num[0:-2]
     b = num[-2:]
     num = a + "." + b
@@ -187,10 +185,6 @@ class CadastroServico(QDialog):
         if self.cadastroServiceWidget.txtNome.text() == "" or self.cadastroServiceWidget.txtTmpServico.text() == "" or \
                 self.cadastroServiceWidget.box.currentText() == "" or self.cadastroServiceWidget.txtValor.text() == "":
             messageDefault("Preencha todos os campos!")
-            return
-        tempoServico = int((self.cadastroServiceWidget.txtTmpServico.text()))
-        if tempoServico < 5 and self.cadastroServiceWidget.box.currentText() == "minutos":
-            messageDefault("Tempo do serviço precisa ser no minímo de 5 minutos")
             return
         if self.cadastroServiceWidget.txtValor.text() == "0,00":
             messageDefault("Defina algum valor para o serviço")
