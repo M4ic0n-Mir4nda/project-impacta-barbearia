@@ -1,5 +1,5 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QDialog, QLabel, QPushButton, QVBoxLayout, QWidget, QStackedWidget, QLineEdit
+from PyQt5.QtWidgets import QApplication, QDialog, QLabel, QPushButton, QVBoxLayout, QWidget, QStackedWidget, QLineEdit, QCheckBox
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from PyQt5.QtGui import QPixmap, QFontDatabase
@@ -92,16 +92,90 @@ class FuncionarioWidget(QWidget):
     def __init__(self):
         super().__init__()
 
-        layout = QVBoxLayout()
-        self.label = QLabel("Tela de Cadastro de Funcionário")
-        layout.addWidget(self.label)
-        self.setLayout(layout)
+        self.background = QLabel(self)
+        self.background.setGeometry(0, 0, 750, 712)
+        self.background.setStyleSheet("background: url(assets/wallpaper.jpg)")
 
+        self.labelNomeFunc = QLabel(self)
+        self.labelNomeFunc.setGeometry(30, 80, 110, 45)
+        self.labelNomeFunc.setText("Nome")
+        QFontDatabase.addApplicationFont("Pacifico-Regular.ttf")
+        self.labelNomeFunc.setStyleSheet(
+            "font-size: 24px; background-color: #282828; color: #fff")
+        self.labelNomeFunc.setAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignCenter)
+        self.txtNomeFunc = QLineEdit(self)
+        self.txtNomeFunc.setGeometry(30, 120, 450, 30)
+        self.txtNomeFunc.setPlaceholderText("Nome...")
+        self.txtNomeFunc.setStyleSheet("border: 3px solid #282828; border-radius: 5px; font-size: 15px; font-family: Arial")
+
+        # ---------------------------------------------------
+
+        self.labelCpfFunc = QLabel(self)
+        self.labelCpfFunc.setGeometry(30, 200, 110, 45)
+        self.labelCpfFunc.setText("Cpf")
+        QFontDatabase.addApplicationFont("Pacifico-Regular.ttf")
+        self.labelCpfFunc.setStyleSheet(
+            "font-size: 24px; background-color: #282828; color: #fff;")
+        self.labelCpfFunc.setAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignCenter)
+        self.txtCpfFunc = QLineEdit(self)
+        self.txtCpfFunc.setInputMask("999.999.999-99")
+        self.txtCpfFunc.setGeometry(30, 245, 450, 30)
+        self.txtCpfFunc.setStyleSheet("border: 3px solid #282828; border-radius: 5px; font-size: 15px; font-family: Arial")
+
+        # ---------------------------------------------------
+
+        self.labelSenha = QLabel(self)
+        self.labelSenha.setGeometry(30, 320, 110, 45)
+        self.labelSenha.setText("Senha")
+        QFontDatabase.addApplicationFont("Pacifico-Regular.ttf")
+        self.labelSenha.setStyleSheet(
+            "font-size: 24px; background-color: #282828; color: #fff;")
+        self.labelSenha.setAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignCenter)
+        self.txtSenha = QLineEdit(self)
+        self.txtSenha.setEchoMode(QLineEdit.Password)
+        self.txtSenha.setGeometry(30, 360, 450, 30)
+        self.txtSenha.setPlaceholderText("Senha...")
+        self.txtSenha.setStyleSheet("border: 3px solid #282828; border-radius: 5px; font-size: 15px; font-family: Arial")        
+
+        # ---------------------------------------------------
+
+        self.checkboxAtivo = QCheckBox("SELECIONE SE FOR UM ADMINISTRADOR", self)
+        self.checkboxAtivo.setGeometry(30, 450, 450, 30)
+        self.checkboxAtivo.setStyleSheet(
+            "border: 3px solid #282828; border-radius: 5px; font-size: 15px; color: #282828; background-color: #fcfafa; font-family: Arial")
+
+    def CadastrarFunc(self):
+        print('Teste')
+        conn = ConnectDB()
+        try:
+            conn.conecta()
+            nomefunc = self.txtNomeFunc.text()
+            cpffunc = self.txtCpfFunc.text()
+            senhafunc = self.txtSenha.text()
+            if self.checkboxAtivo.isChecked():
+                permissao = 1
+            else:
+                permissao = 0
+
+            sql = f"insert into barbeiro (nome, cpf,senha, permissao) values ('{nomefunc}', '{cpffunc}', '{senhafunc}', {permissao})"
+            print(sql)
+            conn.execute(sql)
+            conn.commit()
+            self.txtNomeFunc.setText("")
+            self.txtCpfFunc.setText("")
+            self.txtSenha.setText("")
+            self.checkboxAtivo.setChecked(False)
+        except Exception as e:
+            print(f"Erro ao cadastrar funcionario: {e}")
+        finally:
+            conn.desconecta()
 
 class Cadastro(QDialog):
     def __init__(self, permissao, parent=None):
         super().__init__(parent)
         self.permissao = permissao
+        self.button = 1
+        self.paginaAtual = "cliente"
         self.setWindowTitle("Cadastros")
         self.setWindowFlag(Qt.FramelessWindowHint)
         self.resize(750, 712)
@@ -171,27 +245,32 @@ class Cadastro(QDialog):
         self.buttonFechar.clicked.connect(self.closeWindow)
 
     def validateFields(self):
-        validaCpf = None
-        try:
-            conn = ConnectDB()
-            conn.conecta()
-            sql = f"select cpf from clientes where cpf='{self.clienteWidget.txtCpf.text()}'"
-            conn.execute(sql)
-            cpfExist = conn.fetchone()
-            validaCpf = cpfExist['cpf']
-        except Exception as e:
-            print(e)
-        if self.clienteWidget.txtNome.text() == "" or self.clienteWidget.txtCpf.text() == "" or \
-                self.clienteWidget.txtEmail.text() == "" or self.clienteWidget.txtDataNasc.text() == "":
-            messageDefault("Preencha todos os campos!")
-            return
+        if self.button == 1:
+            validaCpf = None
+            try:
+                conn = ConnectDB()
+                conn.conecta()
+                sql = f"select cpf from clientes where cpf='{self.clienteWidget.txtCpf.text()}'"
+                conn.execute(sql)
+                cpfExist = conn.fetchone()
+                validaCpf = cpfExist['cpf']
+            except Exception as e:
+                print(e)
+            if self.clienteWidget.txtNome.text() == "" or self.clienteWidget.txtCpf.text() == "" or \
+                    self.clienteWidget.txtEmail.text() == "" or self.clienteWidget.txtDataNasc.text() == "":
+                messageDefault("Preencha todos os campos!")
+                return
 
-        if not "@" in self.clienteWidget.txtEmail.text():
-            messageDefault("Endereço de email inválido")
-            return
+            if not "@" in self.clienteWidget.txtEmail.text():
+                messageDefault("Endereço de email inválido")
+                return
 
-        if validaCpf:
-            messageDefault("CPF já cadastrado")
+            if validaCpf:
+                messageDefault("CPF já cadastrado")
+                return
+        else:
+            self.funcionarioWidget.CadastrarFunc()
+            messageDefault("Cadastro efetuado com sucesso!")
             return
 
         self.saveData()
@@ -229,9 +308,13 @@ class Cadastro(QDialog):
         self.close()
 
     def showCliente(self):
+        self.button = 1
+        print(self.button)
         self.stack.setCurrentWidget(self.clienteWidget)
 
     def showFuncionario(self):
+        self.button = 2
+        print(self.button)
         self.stack.setCurrentWidget(self.funcionarioWidget)
 
     # Centraliza a janela no meio da tela
@@ -263,6 +346,6 @@ class WorkerThread(QThread):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    cad = Cadastro()
+    cad = Cadastro(1)
     cad.show()
     sys.exit(app.exec_())
