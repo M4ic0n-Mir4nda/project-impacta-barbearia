@@ -8,6 +8,7 @@ from connDB import ConnectDB
 from message import messageDefault
 from agendamento import Agendamento
 from cadastroServico import CadastroServico
+from relatorio import Relatorio
 
 
 class MainWindow(QMainWindow):
@@ -132,6 +133,7 @@ class MainWindow(QMainWindow):
                 self.pixmap = self.pixmap.scaled(105, 105)
                 self.imgRelatorios.setPixmap(self.pixmap)
                 self.imgRelatorios.resize(self.pixmap.width(), self.pixmap.height())
+                self.imgRelatorios.mousePressEvent = self.pressRelatorio
             else:
                 self.lblCadastro = QLabel(self)
                 self.lblCadastro.setGeometry(300, 410, 150, 180)
@@ -181,6 +183,7 @@ class MainWindow(QMainWindow):
             self.pixmap = self.pixmap.scaled(105, 105)
             self.imgRelatorios.setPixmap(self.pixmap)
             self.imgRelatorios.resize(self.pixmap.width(), self.pixmap.height())
+            self.imgRelatorios.mousePressEvent = self.pressRelatorio
 
     def pressCadastroServico(self, event):
         windowCadService = CadastroServico()
@@ -193,6 +196,11 @@ class MainWindow(QMainWindow):
     def pressAgendamento(self, event):
         windowAgendamento = Agendamento(self)
         windowAgendamento.exec()
+
+    def pressRelatorio(self, event):
+        print('Teste')
+        windowRelatorio = Relatorio()
+        windowRelatorio.exec()
 
     def deslogar(self):
         self.permissao = 0

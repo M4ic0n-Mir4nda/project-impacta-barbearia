@@ -3,7 +3,7 @@ import mysql.connector
 
 
 class ConnectDB:
-    def __init__(self, host="localhost", port="3306", database="bd_barbearia", user="root", password="root"):
+    def __init__(self, host="localhost", port="3306", database="studio_beard", user="root", password="root"):
         self.host = host
         self.port = port
         self.database = database

@@ -170,6 +170,7 @@ class FuncionarioWidget(QWidget):
         finally:
             conn.desconecta()
 
+
 class Cadastro(QDialog):
     def __init__(self, permissao, parent=None):
         super().__init__(parent)
