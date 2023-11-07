@@ -198,7 +198,6 @@ class MainWindow(QMainWindow):
         windowAgendamento.exec()
 
     def pressRelatorio(self, event):
-        print('Teste')
         windowRelatorio = Relatorio()
         windowRelatorio.exec()
 

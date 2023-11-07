@@ -9,6 +9,18 @@ from datetime import datetime, timedelta
 from connDB import ConnectDB
 from message import messageDefault
 
+stylesheet = '''
+    QTreeWidget::Item{
+        color: black;
+        border-bottom: 1px solid #d2d2d2;
+        border-top: 1px solid #d2d2d2;
+        border-right: 1px solid #d2d2d2;
+    }
+    QTreeWidget::Item:selected {
+        background-color: #94c9e4;
+    }
+'''
+
 
 class Relatorio(QDialog):
     def __init__(self, parent=None):
@@ -34,20 +46,21 @@ class Relatorio(QDialog):
             }
         """)
         self.closeButton.setGeometry(710, 0, 40, 25)
+        self.closeButton.clicked.connect(self.closeWindow)
 
         # ------------------------------------------------------
 
         self.detalhar = QCheckBox(self)
         self.detalhar.setText("Detalhar")
         self.detalhar.setStyleSheet("font-size: 12px; font-family: Arial")
-        self.detalhar.setGeometry(100, 28, 70, 23)
+        self.detalhar.setGeometry(280, 28, 70, 23)
 
         # ------------------------------------------------------
 
         self.lblData = QLabel(self)
-        self.lblData.setText("Data")
+        self.lblData.setText("Data(inicial/final)")
         self.lblData.setStyleSheet("font-size: 13px; font-family: Arial")
-        self.lblData.setGeometry(23, 25, 70, 25)
+        self.lblData.setGeometry(23, 25, 150, 25)
 
         # ------------------------------------------------------
 
@@ -60,7 +73,9 @@ class Relatorio(QDialog):
                     padding: 3px;
                 }
             """)
+        self.dataInicio.setDisplayFormat("dd/MM/yyyy")
         self.dataInicio.setGeometry(20, 50, 90, 25)
+        self.setFirstDayOfTheMonth()
 
         self.dataFim = QDateEdit(self)
         self.dataFim.setCalendarPopup(True)
@@ -71,14 +86,25 @@ class Relatorio(QDialog):
                     padding: 3px;
                 }
             """)
+        self.dataFim.setDisplayFormat("dd/MM/yyyy")
         self.dataFim.setGeometry(140, 50, 90, 25)
+        self.setToday()
 
         # ------------------------------------------------------
 
         self.filtroBarbeiro = QComboBox(self)
         self.filtroBarbeiro.addItem("")
         self.filtroBarbeiro.setEditable(True)
-        self.filtroBarbeiro.addItem("Maicon Miranda Santana")
+        try:
+            conn = ConnectDB()
+            conn.conecta()
+            sql = "select id_barbeiro, nome from barbeiro"
+            conn.execute(sql)
+            barbeiros = conn.fetchall()
+            for barbeiro in barbeiros:
+                self.filtroBarbeiro.addItem(f"{barbeiro['id_barbeiro']} - {barbeiro['nome']}")
+        except Exception as e:
+            print(e)
         self.filtroBarbeiro.setStyleSheet("font-size: 12px; font-family: Arial")
         self.filtroBarbeiro.setGeometry(280, 50, 230, 25)
 
@@ -103,20 +129,29 @@ class Relatorio(QDialog):
                                 background-color: #2980b9;
                             }
             """)
+        self.buscarBtn.clicked.connect(self.searchFaturamento)
 
         # ------------------------------------------------------
 
         self.treeWidgetFaturamento = QTreeWidget(self)
         self.treeWidgetFaturamento.setGeometry(5, 110, 740, 567)
         self.treeWidgetFaturamento.setColumnCount(6)
-        self.treeWidgetFaturamento.setColumnWidth(0, 105)
-        self.treeWidgetFaturamento.setColumnWidth(1, 105)
-        self.treeWidgetFaturamento.setColumnWidth(2, 160)
-        self.treeWidgetFaturamento.setColumnWidth(3, 120)
-        self.treeWidgetFaturamento.setColumnWidth(4, 140)
-        self.treeWidgetFaturamento.setColumnWidth(5, 100)
+        self.treeWidgetFaturamento.setColumnWidth(0, 100)
+        self.treeWidgetFaturamento.setColumnWidth(1, 100)
+        self.treeWidgetFaturamento.setColumnWidth(2, 170)
+        self.treeWidgetFaturamento.setColumnWidth(3, 100)
+        self.treeWidgetFaturamento.setColumnWidth(4, 185)
+        self.treeWidgetFaturamento.setColumnWidth(5, 80)
         self.treeWidgetFaturamento.setHeaderLabels(["Data", "Hora", "Cliente", "Cliente_doc", "Servico", "Valor"])
         self.treeWidgetFaturamento.header().setDefaultAlignment(Qt.AlignCenter | Qt.AlignVCenter)
+        self.treeWidgetFaturamento.header().setStyleSheet("""
+                                font: bold 11px; 
+                                text-align: center; 
+                                font-family: Arial; 
+                                border: 1px solid #d3d3d3;
+                                background-color: #f1f1f1;
+        """)
+        self.treeWidgetFaturamento.setStyleSheet(stylesheet)
 
         # ------------------------------------------------------
 
@@ -126,7 +161,7 @@ class Relatorio(QDialog):
         self.lblFaturamentoTotal.setGeometry(0, 683, 100, 24)
 
         self.lblValorFaturamentoTotal = QLabel(self)
-        self.lblValorFaturamentoTotal.setText("20.569.59")
+        self.lblValorFaturamentoTotal.setText("0.00")
         self.lblValorFaturamentoTotal.setStyleSheet("font-size: 14px; border: 1px solid grey; font-family: Arial")
         self.lblValorFaturamentoTotal.setGeometry(100, 683, 100, 24)
         self.lblValorFaturamentoTotal.setAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignCenter)
@@ -152,6 +187,76 @@ class Relatorio(QDialog):
         dialogGeo.moveCenter(centerPoint)
 
         self.move(dialogGeo.topLeft())  # Move o diálogo para a posição calculada
+
+    def searchFaturamento(self):
+        self.treeWidgetFaturamento.clear()
+        try:
+            dataIncial = datetime.strptime(self.dataInicio.text(), "%d/%m/%Y").strftime("%Y%m%d")
+            dataFinal = datetime.strptime(self.dataFim.text(), "%d/%m/%Y").strftime("%Y%m%d")
+            busca = self.filtroBarbeiro.currentText().split("-") if self.filtroBarbeiro.currentText() else None
+            conn = ConnectDB()
+            conn.conecta()
+            if busca is None:
+                sql = f"""
+                        select date_format(agendamentos.data_hora, '%Y/%m/%d') as dia, sum(servicos.valor_servico) as total_acum
+                        from agendamentos
+                        join servicos on agendamentos.id_servico = servicos.id
+                        where agendamentos.status=1 and agendamentos.data_hora between '{dataIncial}' and '{dataFinal}235959'
+                        group by date_format(agendamentos.data_hora, '%Y/%m/%d') order by date_format(agendamentos.data_hora, '%Y/%m/%d');
+                        """
+            else:
+                id_barb = int(busca[0])
+                sql = f"""
+                        select date_format(agendamentos.data_hora, '%Y/%m/%d') as dia, sum(servicos.valor_servico) as total_acum
+                        from agendamentos
+                        join servicos on agendamentos.id_servico = servicos.id
+                        join barbeiro on agendamentos.id_barbeiro = barbeiro.id_barbeiro
+                        where agendamentos.status=1 and agendamentos.data_hora between '{dataIncial}' and '{dataFinal}235959'
+                        and agendamentos.id_barbeiro={id_barb}
+                        group by date_format(agendamentos.data_hora, '%Y/%m/%d') order by date_format(agendamentos.data_hora, '%Y/%m/%d');
+                        """
+            conn.execute(sql)
+            rows = conn.fetchall()
+            valorTotal = 0
+            if rows:
+                for row in rows:
+                    dia = datetime.strptime(row['dia'], "%Y/%m/%d").strftime("%d/%m/%Y")
+                    valor = f"{row['total_acum']:.2f}"
+                    item = QTreeWidgetItem(self.treeWidgetFaturamento)
+                    item.setText(0, str(dia))
+                    item.setText(1, "*")
+                    item.setText(2, "*")
+                    item.setText(3, "*")
+                    item.setText(4, "*")
+                    item.setText(5, str(valor))
+
+                    item.setTextAlignment(1, Qt.AlignmentFlag.AlignCenter)
+                    item.setTextAlignment(2, Qt.AlignmentFlag.AlignCenter)
+                    item.setTextAlignment(3, Qt.AlignmentFlag.AlignCenter)
+                    item.setTextAlignment(4, Qt.AlignmentFlag.AlignCenter)
+                    item.setTextAlignment(5, Qt.AlignmentFlag.AlignCenter)
+                    valorTotal += float(valor)
+                self.lblValorFaturamentoTotal.setText(f"{valorTotal:.2f}")
+            else:
+                messageDefault("Nenhum registro encontrado")
+        except Exception as e:
+            print(e)
+
+    def closeWindow(self):
+        self.close()
+
+    def setToday(self):
+        today = QDate().currentDate().toString("dd/MM/yyyy")
+        formatToday = QDate().fromString(today, "dd/MM/yyyy")
+        self.dataFim.setDate(formatToday)
+
+    def setFirstDayOfTheMonth(self):
+        mes_ano = QDate().currentDate().toString("MM/yyyy")
+        listMes = mes_ano.split("/")
+        listMes.insert(0, "01")
+        diaUmDoMes = "/".join(listMes)
+        formatDay = QDate().fromString(diaUmDoMes, "dd/MM/yyyy")
+        self.dataInicio.setDate(formatDay)
 
 
 if __name__ == "__main__":
