@@ -135,14 +135,13 @@ class Relatorio(QDialog):
 
         self.treeWidgetFaturamento = QTreeWidget(self)
         self.treeWidgetFaturamento.setGeometry(5, 110, 740, 567)
-        self.treeWidgetFaturamento.setColumnCount(6)
-        self.treeWidgetFaturamento.setColumnWidth(0, 100)
-        self.treeWidgetFaturamento.setColumnWidth(1, 100)
-        self.treeWidgetFaturamento.setColumnWidth(2, 170)
-        self.treeWidgetFaturamento.setColumnWidth(3, 100)
-        self.treeWidgetFaturamento.setColumnWidth(4, 185)
-        self.treeWidgetFaturamento.setColumnWidth(5, 80)
-        self.treeWidgetFaturamento.setHeaderLabels(["Data", "Hora", "Cliente", "Cliente_doc", "Servico", "Valor"])
+        self.treeWidgetFaturamento.setColumnCount(5)
+        self.treeWidgetFaturamento.setColumnWidth(0, 150)
+        self.treeWidgetFaturamento.setColumnWidth(1, 170)
+        self.treeWidgetFaturamento.setColumnWidth(2, 120)
+        self.treeWidgetFaturamento.setColumnWidth(3, 215)
+        self.treeWidgetFaturamento.setColumnWidth(4, 60)
+        self.treeWidgetFaturamento.setHeaderLabels(["Data", "Cliente", "Cliente_doc", "Servico", "Valor"])
         self.treeWidgetFaturamento.header().setDefaultAlignment(Qt.AlignCenter | Qt.AlignVCenter)
         self.treeWidgetFaturamento.header().setStyleSheet("""
                                 font: bold 11px; 
@@ -196,49 +195,110 @@ class Relatorio(QDialog):
             busca = self.filtroBarbeiro.currentText().split("-") if self.filtroBarbeiro.currentText() else None
             conn = ConnectDB()
             conn.conecta()
-            if busca is None:
-                sql = f"""
-                        select date_format(agendamentos.data_hora, '%Y/%m/%d') as dia, sum(servicos.valor_servico) as total_acum
-                        from agendamentos
-                        join servicos on agendamentos.id_servico = servicos.id
-                        where agendamentos.status=1 and agendamentos.data_hora between '{dataIncial}' and '{dataFinal}235959'
-                        group by date_format(agendamentos.data_hora, '%Y/%m/%d') order by date_format(agendamentos.data_hora, '%Y/%m/%d');
-                        """
-            else:
-                id_barb = int(busca[0])
-                sql = f"""
-                        select date_format(agendamentos.data_hora, '%Y/%m/%d') as dia, sum(servicos.valor_servico) as total_acum
-                        from agendamentos
-                        join servicos on agendamentos.id_servico = servicos.id
-                        join barbeiro on agendamentos.id_barbeiro = barbeiro.id_barbeiro
-                        where agendamentos.status=1 and agendamentos.data_hora between '{dataIncial}' and '{dataFinal}235959'
-                        and agendamentos.id_barbeiro={id_barb}
-                        group by date_format(agendamentos.data_hora, '%Y/%m/%d') order by date_format(agendamentos.data_hora, '%Y/%m/%d');
-                        """
-            conn.execute(sql)
-            rows = conn.fetchall()
-            valorTotal = 0
-            if rows:
-                for row in rows:
-                    dia = datetime.strptime(row['dia'], "%Y/%m/%d").strftime("%d/%m/%Y")
-                    valor = f"{row['total_acum']:.2f}"
-                    item = QTreeWidgetItem(self.treeWidgetFaturamento)
-                    item.setText(0, str(dia))
-                    item.setText(1, "*")
-                    item.setText(2, "*")
-                    item.setText(3, "*")
-                    item.setText(4, "*")
-                    item.setText(5, str(valor))
+            if self.detalhar.isChecked():
+                if busca is None:
+                    sql = f"""
+                            select agendamentos.data_hora as dia, 
+                            agendamentos.nome_cliente as cliente,
+                            agendamentos.cpf_cliente as cpf,
+                            servicos.nome_servico as servico,
+                            servicos.valor_servico as venda
+                            from agendamentos
+                            join servicos on agendamentos.id_servico = servicos.id
+                            join barbeiro on agendamentos.id_barbeiro = barbeiro.id_barbeiro
+                            where agendamentos.status=1 and 
+                            agendamentos.data_hora between {dataIncial} and {dataFinal}235959
+                            order by agendamentos.data_hora
+                            """
+                else:
+                    id_barb = int(busca[0])
+                    sql = f"""
+                            select agendamentos.data_hora as dia, 
+                            agendamentos.nome_cliente as cliente,
+                            agendamentos.cpf_cliente as cpf,
+                            servicos.nome_servico as servico,
+                            servicos.valor_servico as venda
+                            from agendamentos
+                            join servicos on agendamentos.id_servico = servicos.id
+                            join barbeiro on agendamentos.id_barbeiro = barbeiro.id_barbeiro
+                            where agendamentos.status=1 and 
+                            agendamentos.data_hora between {dataIncial} and {dataFinal}235959 and
+                            agendamentos.id_barbeiro={id_barb}
+                            order by agendamentos.data_hora
+                            """
+                conn.execute(sql)
+                rows = conn.fetchall()
+                valorTotal = 0
+                if rows:
+                    for row in rows:
+                        dia = datetime.strptime(str(row['dia']), "%Y-%m-%d %H:%M:%S").strftime("%d/%m/%Y %H:%M:%S")
+                        cliente = row['cliente']
+                        cpf = row['cpf']
+                        servico = row['servico']
+                        valor = f"{row['venda']:.2f}"
+                        item = QTreeWidgetItem(self.treeWidgetFaturamento)
+                        item.setText(0, str(dia))
+                        item.setText(1, str(cliente))
+                        item.setText(2, str(cpf))
+                        item.setText(3, str(servico))
+                        item.setText(4, str(valor))
 
-                    item.setTextAlignment(1, Qt.AlignmentFlag.AlignCenter)
-                    item.setTextAlignment(2, Qt.AlignmentFlag.AlignCenter)
-                    item.setTextAlignment(3, Qt.AlignmentFlag.AlignCenter)
-                    item.setTextAlignment(4, Qt.AlignmentFlag.AlignCenter)
-                    item.setTextAlignment(5, Qt.AlignmentFlag.AlignCenter)
-                    valorTotal += float(valor)
-                self.lblValorFaturamentoTotal.setText(f"{valorTotal:.2f}")
+                        item.setTextAlignment(0, Qt.AlignmentFlag.AlignCenter)
+                        item.setTextAlignment(1, Qt.AlignmentFlag.AlignCenter)
+                        item.setTextAlignment(2, Qt.AlignmentFlag.AlignCenter)
+                        item.setTextAlignment(3, Qt.AlignmentFlag.AlignCenter)
+                        item.setTextAlignment(4, Qt.AlignmentFlag.AlignCenter)
+                        valorTotal += float(valor)
+                    self.lblValorFaturamentoTotal.setText(f"{valorTotal:.2f}")
+                else:
+                    messageDefault("Nenhum registro encontrado")
+                return True
             else:
-                messageDefault("Nenhum registro encontrado")
+                if busca is None:
+                    sql = f"""
+                            select date_format(agendamentos.data_hora, '%Y/%m/%d') as dia, sum(servicos.valor_servico) as total_acum
+                            from agendamentos
+                            join servicos on agendamentos.id_servico = servicos.id
+                            where agendamentos.status=1 and agendamentos.data_hora between {dataIncial} and {dataFinal}235959
+                            group by date_format(agendamentos.data_hora, '%Y/%m/%d') 
+                            order by date_format(agendamentos.data_hora, '%Y/%m/%d');
+                            """
+                else:
+                    id_barb = int(busca[0])
+                    sql = f"""
+                            select date_format(agendamentos.data_hora, '%Y/%m/%d') as dia, sum(servicos.valor_servico) as total_acum
+                            from agendamentos
+                            join servicos on agendamentos.id_servico = servicos.id
+                            join barbeiro on agendamentos.id_barbeiro = barbeiro.id_barbeiro
+                            where agendamentos.status=1 and agendamentos.data_hora between {dataIncial} and {dataFinal}235959
+                            and agendamentos.id_barbeiro={id_barb}
+                            group by date_format(agendamentos.data_hora, '%Y/%m/%d') 
+                            order by date_format(agendamentos.data_hora, '%Y/%m/%d');
+                            """
+                conn.execute(sql)
+                rows = conn.fetchall()
+                valorTotal = 0
+                if rows:
+                    for row in rows:
+                        dia = datetime.strptime(row['dia'], "%Y/%m/%d").strftime("%d/%m/%Y")
+                        valor = f"{row['total_acum']:.2f}"
+                        item = QTreeWidgetItem(self.treeWidgetFaturamento)
+                        item.setText(0, str(dia))
+                        item.setText(1, "*")
+                        item.setText(2, "*")
+                        item.setText(3, "*")
+                        item.setText(4, str(valor))
+
+                        item.setTextAlignment(0, Qt.AlignmentFlag.AlignCenter)
+                        item.setTextAlignment(1, Qt.AlignmentFlag.AlignCenter)
+                        item.setTextAlignment(2, Qt.AlignmentFlag.AlignCenter)
+                        item.setTextAlignment(3, Qt.AlignmentFlag.AlignCenter)
+                        item.setTextAlignment(4, Qt.AlignmentFlag.AlignCenter)
+                        valorTotal += float(valor)
+                    self.lblValorFaturamentoTotal.setText(f"{valorTotal:.2f}")
+                else:
+                    messageDefault("Nenhum registro encontrado")
+                return True
         except Exception as e:
             print(e)
 
