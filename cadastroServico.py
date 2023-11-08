@@ -186,6 +186,9 @@ class CadastroServico(QDialog):
                 self.cadastroServiceWidget.box.currentText() == "" or self.cadastroServiceWidget.txtValor.text() == "":
             messageDefault("Preencha todos os campos!")
             return
+        if self.cadastroServiceWidget.txtTmpServico.text() == "00:00:00":
+            messageDefault("Defina um tempo para o serviço")
+            return
         if self.cadastroServiceWidget.txtValor.text() == "0,00":
             messageDefault("Defina algum valor para o serviço")
             return

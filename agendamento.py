@@ -385,14 +385,13 @@ class AgendarWidget(QWidget):
         valor = self.valorInput.text()
         horas = self.horaInput.text()
         minutos = self.minutoInput.text()
+        tempoServico = self.tempo.split(":")
         dt = datetime.strptime(f"{self.anoInput.text()}{self.mesInput.text()}{self.diaInput.text()}{horas}{minutos}00",
                                "%Y%m%d%H%M%S")
 
-        previsao = datetime.strptime(str(dt + timedelta(minutes=self.tempo)), "%Y-%m-%d %H:%M:%S").strftime(
-            "%Y%m%d%H%M%S") \
-            if self.horas == "m" else datetime.strptime(str(dt + timedelta(hours=self.tempo)),
-                                                        "%Y-%m-%d %H:%M:%S").strftime("%Y%m%d%H%M%S")
-
+        previsao = datetime.strptime(str(dt + timedelta(hours=int(tempoServico[0]), minutes=int(tempoServico[1]),
+                                                        seconds=int(tempoServico[2]))), "%Y-%m-%d %H:%M:%S").strftime(
+            "%Y%m%d%H%M%S")
         data = datetime.strptime(str(dt), "%Y-%m-%d %H:%M:%S").strftime("%Y%m%d%H%M%S")
         barberList = self.barbeiroInput.currentText().split("-")
         barberId = barberList[0]
@@ -402,7 +401,7 @@ class AgendarWidget(QWidget):
             messageDefault('Preencha todos os campos!')
             return
         try:
-            sqlVerificarAgendamento = f"select * from agendamentos where data_hora={data} and id_barbeiro={barberId}"
+            sqlVerificarAgendamento = f"select * from agendamentos where data_hora={data} and id_barbeiro={barberId} and status=0"
             conn.execute(sqlVerificarAgendamento)
             agendamento = conn.fetchone()
             if agendamento:
@@ -1063,7 +1062,7 @@ class AgendamentosWidget(QWidget):
             lblHorario = QLabel("Horário:")
             self.horarioDateTimeEdit = QDateTimeEdit()
             self.horarioDateTimeEdit.setDateTime(qDate)
-            self.horarioDateTimeEdit.setDisplayFormat("dd-MM-yyyy HH:mm")
+            self.horarioDateTimeEdit.setDisplayFormat("dd-MM-yyyy HH:mm:ss")
             self.horarioDateTimeEdit.setCalendarPopup(True)
 
             layoutHorario.addWidget(lblHorario)
@@ -1104,13 +1103,13 @@ class AgendamentosWidget(QWidget):
     def confirmUpdateAgendamento(self):
         conn = ConnectDB()
         conn.conecta()
+        tempoServico = self.tempoServico.split(":")
         try:
-            dataAlterada = datetime.strptime(str(self.horarioDateTimeEdit.text()), "%d-%m-%Y %H:%M").strftime("%Y%m%d%H%M%S")
-            dataFormatada = datetime.strptime(str(self.horarioDateTimeEdit.text()), "%d-%m-%Y %H:%M")
-            previsaoTermino = datetime.strptime(str(dataFormatada + timedelta(minutes=self.tempoServico)),
-                                                "%Y-%m-%d %H:%M:%S").strftime("%Y%m%d%H%M%S") \
-                if self.horas == "m" or self.horas == "minutos" else datetime.strptime(str(dataFormatada + timedelta(hours=self.tempoServico)),
-                                                            "%Y-%m-%d %H:%M:%S").strftime("%Y%m%d%H%M%S")
+            dataAlterada = datetime.strptime(str(self.horarioDateTimeEdit.text()), "%d-%m-%Y %H:%M:%S").strftime("%Y%m%d%H%M%S")
+            dataFormatada = datetime.strptime(str(self.horarioDateTimeEdit.text()), "%d-%m-%Y %H:%M:%S")
+            previsaoTermino = datetime.strptime(str(dataFormatada + timedelta(
+                hours=int(tempoServico[0]), minutes=int(tempoServico[1]), seconds=int(tempoServico[2]))),
+                                                "%Y-%m-%d %H:%M:%S").strftime("%Y%m%d%H%M%S")
             barberList = self.barbeiroLineEdit.currentText().split("-")
             barberId = barberList[0]
             sql = f"""
